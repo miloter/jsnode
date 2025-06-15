@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <script src="jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            JsNode.select('#hide').on('click', () =>
+                JsNode.select('ol > li:nth-child(even)').hide());
+            JsNode.select('#show').on('click', () =>
+                JsNode.select('ol > li:nth-child(even)').show());
+            JsNode.select('#toggle').on('click', () =>
+                JsNode.select('ol > li:nth-child(even)').toggle());
+        });
+    </script>
+</head>
+
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem">
+        <button id="hide">Ocultar elementos pares de la lista</button>
+        <button id="show">Mostrar elementos pares de la lista</button>
+        <button id="toggle">Mostrar/Ocultar elementos pares de la lista</button>
+    </div>
+
+    <ol style="width: 33%; margin: 2rem auto">
+        <li>Uno</li>
+        <li>Dos</li>
+        <li>Tres</li>
+        <li>Cuatro</li>
+        <li>Cinco</li>
+        <li>Seis</li>
+        <li>Siete</li>
+    </ol>
+</body>
+
+</html>

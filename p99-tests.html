@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jsNode.js JavaScript fácil</title>
+    <script src="jquery-4.0.0-beta.2.js"></script>
+    <script src="jsnode.js"></script>
+    <!-- <script src="jsnode-min.js"></script> -->    
+    <script>
+        JsNode.domLoaded().then(() => {
+            const max = 100000;
+            const sel = JsNode.select('div');
+
+            console.time('html');
+            for (let i = 0; i < max; i++) {
+                sel.html('');
+            }
+            console.timeEnd('html');
+
+            console.time('empty');
+            for (let i = 0; i < max; i++) {
+                sel.empty();
+            }
+            console.timeEnd('empty');
+
+            console.time('text');
+            for (let i = 0; i < max; i++) {
+                sel.text('');
+            }
+            console.timeEnd('text');
+        });
+    </script>
+</head>
+
+<body>
+    <div>
+        texto
+        <span>hola</span>
+        texto
+        <div>adios</div>
+        texto
+    </div>
+</body>
+
+</html>

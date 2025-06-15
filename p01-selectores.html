@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <script src="jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            JsNode.select('#parrafos').on('click', () =>
+                // Selecciona los <p> hermanos de un <h2> e hijos directos de <body>
+                JsNode.select('body > h2 ~ p').hide());
+            JsNode.select('.lista-verde-primero').on('click', () => {
+                JsNode.select('ul > li:first-of-type').css('color', 'darkgreen');
+            });
+
+            JsNode.select('.lista-azul-ultimo').on('click', () => {
+                JsNode.select('ul > li:last-of-type').css('color', 'blue');
+            });
+
+            JsNode.select('.lista-amarillo-impares').on('click', () => {
+                JsNode.select('ul > li:nth-child(odd)').css('background-color', 'yellow');
+            });
+
+            JsNode.select('.lista-naranja-pares').on('click', () => {
+                JsNode.select('ul > li:nth-child(even)').css('background-color', 'orange');
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h2>Esto es una cabecera</h2>
+
+    <p>Esto es un párrafo.</p>
+    <p>Esto es otro párrafo.</p>
+    <button id="parrafos">Hazme click para ocultar los párrafos</button>
+
+    <section>
+        <h2>Lista de elementos</h2>
+        <ul>
+            <li>Primer elemento</li>
+            <li>Segundo elemento</li>
+            <li>Tercer elemento</li>
+            <li>Cuarto elemento</li>
+            <li>Quinto elemento</li>
+        </ul>
+        <p>
+            <button class="lista-verde-primero">Haz click para poner en verde el primer elemento de la lista</button>
+        </p>
+        <p>
+            <button class="lista-azul-ultimo">Haz click para poner en azul el úlitmo elemento de la lista</button>
+        </p>
+        <p>
+            <button class="lista-amarillo-impares">Haz click para poner fondo amarillo a los elementos impares de la
+                lista</button>
+        </p>
+        <p>
+            <button class="lista-naranja-pares">Haz click para poner fondo naranja a los elementos pares de la
+                lista</button>
+        </p>
+    </section>    
+</body>
+
+</html>

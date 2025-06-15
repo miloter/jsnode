@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <script src="jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            JsNode.select('div.form-field').css('margin-bottom', '1rem');
+            JsNode.select('#form').on('submit', event => {
+                event.preventDefault();
+                // Borra mensajes anteriores
+                JsNode.select('div.alert').remove();
+
+                if (!JsNode.select('#name').val()) {
+                    JsNode.select('#name').after('<div>').next()
+                        .addClass('alert').css('color', 'red')
+                        .text('El nombre es obligatorio');
+                }
+
+                if (!JsNode.select('#age').val()) {
+                    JsNode.select('#age').after('<div>').next()
+                        .addClass('alert').css('color', 'red')
+                        .text('La edad es obligatorio');
+                }
+
+                if (!JsNode.select('#color').val()) {
+                    JsNode.select('#color').after('<div>').next()
+                        .addClass('alert').css('color', 'red')
+                        .text('El color es obligatorio');
+                }
+
+                if (!JsNode.select('div.alert').length) {
+                    JsNode.select('#fields').html(/*html*/`
+                        <div>
+                            <strong>Nombre:</strong>
+                            <span> ${JsNode.select('#name').val()}</span>
+                        </div>
+                        <div>
+                            <strong>Edad:</strong>
+                            <span> ${JsNode.select('#age').val()}</span>
+                        </div>
+                        <div>
+                            <strong>Color:</strong>
+                            <span> ${JsNode.select(`#color option[value="${JsNode.select('#color').val()}"]`).text()}</span>
+                        </div>
+                    `);                
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <form id="form">
+        <div class="form-field">
+            <label for="name">(*) Nombre</label>
+            <input type="text" id="name">            
+        </div>
+        <div class="form-field">
+            <label for="age">(*) Edad</label>
+            <input type="number" id="age">
+        </div>
+        <div class="form-field">
+            <label for="color">(*) Color favorito</label>
+            <select id="color">
+                <option value="" selected disabled>-- Seleccione un color --</option>
+                <option value="red">Rojo</option>
+                <option value="green">Verde</option>
+                <option value="blue">Azul</option>
+            </select>
+        </div>
+        <button type="submit">Enviar</button>
+    </form>
+    <p>(*) Campos obligatorios</p>
+    <section>
+        <h3>Campos Enviados</h3>
+        <div id="fields"></div>
+    </section>
+</body>
+
+</html>
