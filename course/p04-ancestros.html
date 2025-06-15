@@ -11,6 +11,7 @@
             flex-direction: column;
             align-items: start;
             gap: 0.5rem;
+            margin-bottom: 1rem;
         }
     </style>
     <script src="../jsnode.js"></script>
@@ -33,15 +34,23 @@
             });            
 
             JsNode.select('.verde').on('click', () => {                
-                // Selecciona directamente el segundo hijo de la lista anidada
-                JsNode.select('ul ol > li:nth-child(2)')
-                    // Selecciona los hermanos
-                    .siblings()
-                    // Selecciona los hijos SPAN
-                    .children('span')
+                // Partimos del tercer párrafo
+                JsNode.select('div div:nth-child(3) p')
+                    // Luego seleccionamos los padres que sean SECTION.
+                    // .parents(...) Busca todos los padres de la selección.
+                    // Con un selector (section) solo selecciona los padres SECTION
+                    .parents('section')
+                    // El H2 es su primer hijo
+                    .children(':first-child')
+                    // Vamos a hacerlo más pequeño
+                    .width('16rem')
                     .css({
                         color: 'green',
-                        backgroundColor: 'orange'
+                        backgroundColor: 'orange',
+                        padding: '1rem',
+                        fontWeight: '1.25rem',
+                        margin: '0 auto',
+                        textAlign: 'center'
                     });
             });            
         });
@@ -51,12 +60,20 @@
 <body>
     <section class="acciones">
         <h2>Acciones</h2>
-        <button class="azul">Poner en azul sobre fondo amarillo los elementos que contienen los números</button>        
+        <button class="azul">
+            Poner en azul sobre fondo amarillo los elementos que
+            contienen los números
+        </button>        
+        <button class="verde">
+            Partiendo del tercer párrafo, seleccionar la etiqueta H2 ponerle
+            <br>
+            color verde sobre fondo naranja y centrarla así como su texto
+        </button>
     </section>
 
     <section>
         <h2>Elementos</h2>
-        <div>            
+        <div>                        
             <div>
                 <span>1</span>
                 <p>Hola Mundo</p>
