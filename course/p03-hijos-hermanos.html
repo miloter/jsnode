@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            JsNode.select('.azul').on('click', () => {
+                // Con .children(...) obtenemos los hijos directos de UL
+                // que serán LI, a su vez los textos están en el primer
+                // hijo SPAN de cada LI (a la segunda llamada a children le
+                // pasamos un selector para que no seleccione lo demás)
+                JsNode.select('ul').children().children('span')
+                    .css({
+                        color: 'blue',
+                        backgroundColor: 'yellow'
+                    });
+            });            
+
+            JsNode.select('.verde').on('click', () => {                
+                // Selecciona directamente el segundo hijo de la lista anidada
+                JsNode.select('ul ol > li:nth-child(2)')
+                    // Selecciona los hermanos
+                    .siblings()
+                    // Selecciona los hijos SPAN
+                    .children('span')
+                    .css({
+                        color: 'green',
+                        backgroundColor: 'orange'
+                    });
+            });            
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="azul">Poner en azul sobre fondo amarillo los textos de los hijos directos de la lista principal</button>        
+        <button class="verde">Poner en verde sobre fondo naranja los textos de los hijos 1 y 3 de la lista anidada</button>
+    </section>
+
+    <section>
+        <h2>Lista de datos anidada</h2>
+        <ul>
+            <!-- Para facilitar la selección de nodos de texto
+             se han envuelto en un elemento SPAN -->
+            <li><span>Elemento 1</span></li>
+            <li><span>Elemento 2</span>
+                <ol>
+                    <li><span>Elemento 2.1</span></li>
+                    <li><span>Elemento 2.2</span></li>
+                    <li><span>Elemento 2.3</span></li>
+                </ol>
+            </li>
+            <li><span>Elemento 3</span></li>
+        </ul>
+    </section>
+</body>
+
+</html>

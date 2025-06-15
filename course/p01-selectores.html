@@ -23,7 +23,8 @@
             JsNode.select('.lista-verde-primero').on('click', () => {
                 // Selecciona el primer LI de la lista UL
                 JsNode.select('ul > li:first-of-type').css('color', 'darkgreen');
-                // Otra forma hubiera sido
+                // Otra forma hubiera sido (los .select(...) a partir del segundo
+                // seleccionan tomando como base la selección anterior)
                 JsNode.select('ul').select('li:nth-child(1)').css('color', 'darkgreen');
                 // Otra forma más (usted puede ser creativ@
                 JsNode.select('ul').select('li').one().css('color', 'darkgreen');
@@ -36,6 +37,12 @@
 
             JsNode.select('.lista-amarillo-impares').on('click', () => {
                 JsNode.select('ul > li:nth-child(odd)').css('background-color', 'yellow');
+                // Otra forma diferente: .filter(...) filtra en la selección actual
+                JsNode.select('ul > li').filter(':nth-child(odd)').css('background-color', 'yellow');
+                // Una forma más enrevesada
+                JsNode.select('ul').select(':not(li:nth-child(even))').css('background-color', 'yellow');
+                // Se puede liar lo que uno quiera
+                JsNode.select('ul > li').filter(':not(:nth-child(even))').css('background-color', 'yellow');
             });
 
             JsNode.select('.lista-naranja-pares').on('click', () => {

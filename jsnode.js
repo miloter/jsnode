@@ -837,9 +837,7 @@ class JsNode {
      * Devuelve un objeto JsNode con los elementos que cumplan el patrón
      * o los que no lo cumplan si negate es true.
      * @param {string} pattern Patrón de expresión regular.
-     * @param {string} [flags] Flags usados en la búsqueda, por defecto ninguno.
-     * @param {boolean} [negate] Si es true devuelve los nodos que no cumplan el
-     * patrón y si es false los que lo cumplan. Por defecto es false.
+     * @param {string} [flags] Flags usados en la búsqueda, por defecto ninguno.     
      * @param {Function} callback Función de devolución de
      * llamada opcional que recibirá un Array de n elementos con la forma:
      * 
@@ -853,25 +851,26 @@ class JsNode {
      * 
      * input: Texto con el que se compara el patrón.
      * 
-     * La función debe devolver true si acepta la coincidencia o false si no la acepta.
-     * @returns {JsNode} Un objeto JsNode con los elementos que cumplan el patrón
-     * o los que no lo cumplan si negate es true.
+     * Además recibe como segundo argumento el nodo actual y como tercero el
+     * índice de dicho nodo en la selección. La función debe devolver true si
+     * acepta la coincidencia o false si no la acepta.
+     * @returns {JsNode} Un objeto JsNode con los elementos que cumplan el patrón.
      */
-    filterRegExp(pattern, flags = '', negate = false, callback) {
+    filterRegExp(pattern, flags = '', callback) {
         const re = new RegExp(pattern, flags);
-        this.#nodes = this.#nodes.filter(node => {
+        this.#nodes = this.#nodes.filter((node, index) => {
             let res;
             if (typeof (callback) === 'function') {
                 res = re.exec(node.innerText)
                 if (res) {
-                    res = callback(res);
+                    res = callback(res, node, index);
                 }
                 // Para valores no booleanos
                 res = !!res;
             } else {
                 res = re.test(node.innerText);
             }
-            return negate ? !res : res;
+            return res;
         });
         return this;
     }
@@ -893,26 +892,54 @@ class JsNode {
     }
 
     /**
+     * Itera por la selección actual pasando a un callback el índice que ocupa
+     * en la selección, el this en la función es una instancia de JsNode para
+     * cada nodo DOM de la selección. El retorno del callback no se tiene en cuenta.
+     * @param {Function} callback Función que recibirá como primer argumento
+     * el íncide que ocupa en la selección el elemento representado por this
+     * cuando se active el callback.
+     * @returns {JsNode} La misma selección actual.
+     */
+    each(callback) {
+        this.#nodes.forEach((node, index) => callback.apply(new JsNode(node), [index]));
+
+        return this;
+    }
+
+    /**
      * Devuelve un JsNode conteniendo los elementos filtrados de la selección actual.
-     * @param {string|Function} selector Selector CSS o función
-     * de devolución de llamada que recibe el nodo actual, el índice en
-     * la lista de nodos y el array de nodos, si devuelve true el nodo se
-     * agrega a la selección, y no se agrega si devuelve false.
-     * @param {boolean} negate Si es true, se devuelven los elementos que no
-     * cumplen los criterios, y si es false, los que lo cumplen.
+     * @param {string|Function} selector Selector CSS o función de devolución de
+     * llamada que recibe el nodo actual y el índice en la lista de nodos, si
+     * devuelve true el nodo se agrega a la selección, y no se agrega si
+     * devuelve false.     
      * @returns {JsNode} Un objeto JsNode con el resultado del filtrado.
      */
-    filter(selector, negate = false) {        
-        this.#nodes = this.#nodes.filter((node, index, array) => {            
+    filter(selector) {
+        this.#nodes = this.#nodes.filter((node, index) => {            
             let res;
 
             if (typeof(selector) === 'function') {
-                res = !!selector(node, index, array);
+                res = !!selector(node, index);
             } else {
                 res = node.matches(selector);
             }
-            return negate ? !res : res;
+            return res
         });
+        
+        return this;
+    }
+
+    /**
+     * Devuelve un subconjunto de la selección actual.
+     * @param {number} start Índice de comienzo de la selección (base 0). Si es
+     * negativo indica un desplazamiento desde el final de la selección..     
+     * @param {number} end Índice en el que los elementos dejan de seleccionarse.
+     * Si es negativo indica un desplazamiento desde el final de la selección.
+     * Si se omite se selecciona desde start hasta el final de la selección.
+     * @returns {JsNode} Un objeto JsNode con la nueva selección.
+     */
+    slice(start = 0, end = undefined) {        
+        this.#nodes = this.#nodes.slice(start, end);
         
         return this;
     }

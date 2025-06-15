@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            JsNode.select('.azul').on('click', () => {                
+                // Una forma de hacerlo es seleccionar los elementos P
+                JsNode.select('div div p')
+                    // Luego seleccionamos el padre inmediato de cada uno
+                    .parent()
+                    // El primer hijo es el elemento con el número.
+                    // Por lo que filtramos los hijos
+                    .children(':first-child')
+                    .css({
+                        color: 'blue',
+                        backgroundColor: 'yellow',
+                        padding: '1rem',
+                        fontWeight: '1.25rem'
+                    });
+            });            
+
+            JsNode.select('.verde').on('click', () => {                
+                // Selecciona directamente el segundo hijo de la lista anidada
+                JsNode.select('ul ol > li:nth-child(2)')
+                    // Selecciona los hermanos
+                    .siblings()
+                    // Selecciona los hijos SPAN
+                    .children('span')
+                    .css({
+                        color: 'green',
+                        backgroundColor: 'orange'
+                    });
+            });            
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="azul">Poner en azul sobre fondo amarillo los elementos que contienen los números</button>        
+    </section>
+
+    <section>
+        <h2>Elementos</h2>
+        <div>            
+            <div>
+                <span>1</span>
+                <p>Hola Mundo</p>
+            </div>
+            <div>
+                <b>2</b>
+                <p>Programando en JavaScript</p>
+            </div>
+            <div>
+                <strong>3</strong>
+                <p>Programando en JsNode</p>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

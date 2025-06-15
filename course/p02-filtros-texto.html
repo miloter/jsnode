@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .table {
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid black;
+            padding: 0.25rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            JsNode.select('.azul').on('click', () => {
+                // Podemos usar .filteText(...) para seleccionar elementos con
+                // un determinado texto. Con el segundo parámetro en true le
+                // decimos que no distinga mayúsculas de minúsculas, ni acentos
+                JsNode.select('.table tbody td').filterText('John', true).css({
+                    color: 'blue',
+                    backgroundColor: 'yellow'
+                });
+            });
+
+            JsNode.select('.verde').on('click', () => {
+                // Con .filterRegExp(...) podemos hacer selecciones de texto
+                // más avanzadas
+                JsNode.select('.table tbody td').filterRegExp('[ae].*[ae]').css({
+                    color: 'green',
+                    backgroundColor: 'orange'
+                });
+            });
+
+            JsNode.select('.r1997-1999').on('click', () => {
+                // Con la versión de .filterRegExp(...) que usa un callback
+                // podemos filtrar un rango complejo
+                JsNode.select('.table tbody td').filterRegExp('^\\d+$', '', arr => {
+                    const year = parseInt(arr[0]);
+
+                    // Seleccionamos justo lo contrario para luego ocultar las filas
+                    return year < 1997 || year > 1999;
+                })
+                    // Sube al padre TR y oculta
+                    .parent().hide();
+            });
+
+            JsNode.select('.replace').on('click', () => {
+                // Con \b le indicamos a la expresión regular un límite de palabra
+                // así no seleccionamos la celda con 'NDoe'. Con el flag 'i'
+                // indicamos que haya diferencias entre mayúsculas y minúsculas
+                JsNode.select('.table tbody td').filterRegExp('\\bdoe\\b', 'i')
+                    // Con .each(...) podemos recorrer la selección como objetos JsNode.
+                    // Para que el this funcione no se debe usar aquí una arrow function
+                    .each(function (index) {
+                        const text = this.text();
+                        this.text(this.text().replace(/\bdoe\b/i, 'Smith'));
+                    });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="azul">Poner en azul sobre fondo amarillo las celdas que contengan la palabra 'John'</button>
+        <button class="verde">Poner en verde sobre fondo naranja las celdas que contengan una 'a' y una 'e'</button>
+        <button class="r1997-1999">Mostrar solo las filas cuyo año esté entre 1997 y 1999 ambos inclusive</button>
+        <button class="replace">Reemplazar la palabra 'Doe' por 'Smith'</button>
+    </section>
+
+    <section>
+        <h2>Tabla de Datos</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Año</th>
+                    <th>Nombre</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1998</td>
+                    <td>Martin Luther King</td>
+                </tr>
+                <tr>
+                    <td>2001</td>
+                    <td>John Fitgerald Kennedy</td>
+                </tr>
+                <tr>
+                    <td>1999</td>
+                    <td>john Doe</td>
+                </tr>
+                <tr>
+                    <td>2001</td>
+                    <td>Jane Doe</td>
+                </tr>
+                <tr>
+                    <td>1997</td>
+                    <td>Rachel NDoe</td>
+                </tr>
+                <tr>
+                    <td>1999</td>
+                    <td>Meg Ryan</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</body>
+
+</html>
