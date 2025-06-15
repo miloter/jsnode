@@ -1,3 +1,6 @@
+<!-- JsNode es similar a jQuery, pero con la vocación de ser más sencillo de usar
+ y que las personas entiendan la librería. Para comenzar se requieren conocimientos
+ básicos de HTML, CSS y JavaScript. -->
 <!DOCTYPE html>
 <html lang="es">
 
@@ -5,18 +8,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aprenda jsNode</title>
-    <script src="jsnode.js"></script>
+    <script src="../jsnode.js"></script>
     <script>
+        // Al igual que jQuery podemos iniciar nuestro código cuando el DOM
+        // esté cargado si nuestro script se ejecuta antes del body.
         JsNode.domLoaded().then(() => {
-            JsNode.select('#parrafos').on('click', () =>
+            // El concepto de selector CSS es la principal forma que tiene
+            // JsNode de trabajar con el DOM
+            JsNode.select('#parrafos').on('click', () => {
                 // Selecciona los <p> hermanos de un <h2> e hijos directos de <body>
-                JsNode.select('body > h2 ~ p').hide());
+                JsNode.select('body > h2 ~ p').hide();
+            });
+
             JsNode.select('.lista-verde-primero').on('click', () => {
+                // Selecciona el primer LI de la lista UL
                 JsNode.select('ul > li:first-of-type').css('color', 'darkgreen');
+                // Otra forma hubiera sido
+                JsNode.select('ul').select('li:nth-child(1)').css('color', 'darkgreen');
+                // Otra forma más (usted puede ser creativ@
+                JsNode.select('ul').select('li').one().css('color', 'darkgreen');
             });
 
             JsNode.select('.lista-azul-ultimo').on('click', () => {
-                JsNode.select('ul > li:last-of-type').css('color', 'blue');
+                // Selecciona el último LI dentro de un UL y le da color azul
+                JsNode.select('ul').select('li').one(-1).css('color', 'blue');
             });
 
             JsNode.select('.lista-amarillo-impares').on('click', () => {
@@ -60,7 +75,7 @@
             <button class="lista-naranja-pares">Haz click para poner fondo naranja a los elementos pares de la
                 lista</button>
         </p>
-    </section>    
+    </section>
 </body>
 
 </html>

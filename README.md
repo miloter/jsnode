@@ -11,7 +11,7 @@ JsNode es similar a un jQuery reducido usando solo ES6+ y  el sistema de promise
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desarrollo de componente JsNodeDataTable</title>
-    <script src="jsnode.js"></script>
+    <script src="../jsnode.js"></script>
     <script src="jsnode-datatable.js"></script>
     <script>
         JsNode.domLoaded().then(() => {
