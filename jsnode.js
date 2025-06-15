@@ -645,28 +645,7 @@ class JsNode {
                 reject(error);
             }
         });
-    }
-
-    /**
-     * Devuelve un mapa de objeto con los parámetros y sus valores en la
-     * cadena de consulta.
-     * @returns {object}
-     */
-    static get qsMap() {
-        const map = {};
-        // Obtenemos la cadea de consulta, reemplazando los '+' por un espacio en blanco
-        const qs = decodeURIComponent(location.search.substring(1).replace(/\+/g, ' '));
-        if (qs) {
-            // Separa cada par nombre=valor
-            const args = qs.split('&');
-            for (let i = 0; i < args.length; i++) {
-                // Establece el nombre y el valor
-                map[args[i].substring(0, args[i].indexOf('='))] =
-                    args[i].substring(args[i].indexOf('=') + 1);
-            }
-        }
-        return map;
-    }
+    }    
 
     /**
      * Devuelve true si su argumento es un número.
@@ -774,6 +753,27 @@ class JsNode {
      */
     static getTypeName(expr) {
         return /^\[object (\w+)\]$/.exec(Object.prototype.toString.call(expr))[1];
+    }
+
+    /**
+     * Devuelve un mapa de objeto con los parámetros y sus valores en la
+     * cadena de consulta.
+     * @returns {object}
+     */
+    static get qsMap() {
+        const map = {};
+        // Obtenemos la cadea de consulta, reemplazando los '+' por un espacio en blanco
+        const qs = decodeURIComponent(location.search.substring(1).replace(/\+/g, ' '));
+        if (qs) {
+            // Separa cada par nombre=valor
+            const args = qs.split('&');
+            for (let i = 0; i < args.length; i++) {
+                // Establece el nombre y el valor
+                map[args[i].substring(0, args[i].indexOf('='))] =
+                    args[i].substring(args[i].indexOf('=') + 1);
+            }
+        }
+        return map;
     }
 
     /**
@@ -1412,21 +1412,7 @@ class JsNode {
         }
 
         return this;
-    }
-
-    /**
-     * Devuelve un valor que indica si el primer elemento de
-     * la selección actual es visible.
-     * @returns {boolean}
-     */
-    get visible() {
-        if (this.#nodes[0]) {
-            const cs = getComputedStyle(this.#nodes[0]);
-            return cs.display !== 'none' && cs.visibility !== 'hidden';
-        } else {
-            return false;
-        }
-    }
+    }    
 
     /**
      * Alterna entre mostrar y ocultar la selección.
@@ -1516,23 +1502,7 @@ class JsNode {
      */
     one(index = 0) {
         return new JsNode(this.#nodes.at(index));
-    }
-
-    /**
-     * Devuelve como propiedad la lista de nodos de la selección actual.
-     * @returns {Array<HTMLElement>}
-     */
-    get nodes() {
-        return this.#nodes;
-    }
-
-    /**
-     * Devuelve como propiedad el número de elementos de la selección actual.
-     * @returns {number}
-     */
-    get length() {
-        return this.#nodes.length;
-    }
+    }    
 
     /**
      * Agrega un nuevo controlador de eventos a los elementos actualmente seleccionados.
@@ -1789,6 +1759,36 @@ class JsNode {
             });
 
             return this;
+        }
+    }
+
+    /**
+     * Devuelve como propiedad la lista de nodos de la selección actual.
+     * @returns {Array<HTMLElement>}
+     */
+    get nodes() {
+        return this.#nodes;
+    }
+
+    /**
+     * Devuelve como propiedad el número de elementos de la selección actual.
+     * @returns {number}
+     */
+    get length() {
+        return this.#nodes.length;
+    }
+
+    /**
+     * Devuelve un valor que indica si el primer elemento de
+     * la selección actual es visible.
+     * @returns {boolean}
+     */
+    get visible() {
+        if (this.#nodes[0]) {
+            const cs = getComputedStyle(this.#nodes[0]);
+            return cs.display !== 'none' && cs.visibility !== 'hidden';
+        } else {
+            return false;
         }
     }
 }

@@ -3,4 +3,5 @@ npm-tests/
 .vscode/
 
 .npmignore
-
+p8*.html
+p9*.html
