@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>                
+        JsNode.domLoaded().then(() => {            
+            JsNode.select('.after').on('click', () => {
+                // .after(html|nodo) agrega texto como HTML o un nodo DOM
+                // después de cada uno de los elementos de la selección actual.
+                // Otra forma de decirlo es que inserta un elemento, después del
+                // elemento actual en la selección.
+                // Asegura siempre la selección correcta
+                JsNode.select('ul > li').filterRegExp('^Elemento 3$')
+                    .after('<li><b>Elemento 3.5</b></li>');
+            });            
+
+            JsNode.select('.before').on('click', () => {
+                // .before(html|nodo) agrega texto como HTML o un nodo DOM
+                // antes de cada uno de los elementos de la selección actual.
+                // Otra forma de decirlo es que inserta un elemento, antes del
+                // elemento actual en la selección
+                JsNode.select('ul > li').filterRegExp('^Elemento 3$')
+                    .before('<li><b>Elemento 2.5</b></li>');
+            });            
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>        
+        <button class="after">
+            Establecer un nuevo elemento de lista después del 'Elemento 3' con el HTML:<br>
+            &lt;b&gt;Elemento 3.5&lt;/b&gt;
+        </button>      
+        <button class="before">
+            Establecer un nuevo elemento de lista antes del 'Elemento 3' con el HTML:<br>
+            &lt;b&gt;Elemento 2.5&lt;/b&gt;
+        </button>      
+    </section>
+
+    <section>
+        <h2>Lista de elementos</h2>
+        <ul>
+            <li><span>Elemento 1</span></li>
+            <li><span>Elemento 2</span></li>
+            <li><span>Elemento 3</span></li>
+            <li><span>Elemento 4</span></li>
+            <li><span>Elemento 5</span></li>            
+        </ul>
+    </section>
+</body>
+
+</html>

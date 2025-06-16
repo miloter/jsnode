@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>                
+        JsNode.domLoaded().then(() => {
+            JsNode.select('.get-html').on('click', () => {
+                // .html() sin argumentos, devuelve el HTML contenido en el
+                // primer elemento de la selección actual
+                alert(JsNode.select('ul > li').html());
+            });
+
+            JsNode.select('.get-text').on('click', () => {
+                // .text() sin argumentos, devuelve la concatenación del texto
+                // contenido en cada uno de los elementos de la selección actual
+                alert(JsNode.select('ul > li').text());
+            });
+
+            JsNode.select('.set-html').on('click', () => {
+                // .html(html) establece el HTML contenido en cada uno
+                // de los elementos de la selección actual
+                JsNode.select('ul > li').html('<b>Hola Mundo</b>');
+            });
+
+            JsNode.select('.set-text').on('click', () => {
+                // .html(text) establece el texto contenido en cada uno
+                // de los elementos de la selección actual.
+                // Nótese que aunque parece HTML será interpretado como texto
+                JsNode.select('ul > li').text('<b>Hola Mundo</b>');
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="get-html">Obtener el HTML de los elementos de la lista</button>
+        <button class="get-text">Obtener el texto los elementos de la lista</button>  
+        <button class="set-html">
+            Establecer el HTML de los elementos de la lista<br>
+            &lt;b&gt;Hola Mundo&lt;/b&gt;
+        </button>      
+        <button class="set-text">
+            Establecer el texto de los elementos de la lista<br>
+            &lt;b&gt;Hola Mundo&lt;/b&gt;
+        </button>      
+    </section>
+
+    <section>
+        <h2>Lista de elementos</h2>
+        <ul>
+            <li><span>Elemento 1</span></li>
+            <li><span>Elemento 2</span></li>
+            <li><span>Elemento 3</span></li>
+            <li><span>Elemento 4</span></li>
+            <li><span>Elemento 5</span></li>
+            <li><span>Elemento 6</span></li>
+        </ul>
+    </section>
+</body>
+
+</html>

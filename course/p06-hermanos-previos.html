@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>        
+        JsNode.domLoaded().then(() => {
+            JsNode.select('.azul').on('click', () => {
+                // Seleccionamos primero el 'Elemento 2'
+                JsNode.select('ul > li:nth-child(2)').css({
+                    color: 'green',
+                    fontWeight: 'bold'
+                    // Con .prev(...) Seleccionamos el heramno previo de cada
+                    // elemento de la selección actual
+                }).prev().css({
+                    color: 'blue',
+                    fontWeight: 'bold'
+                });
+            });
+
+            JsNode.select('.naranja').on('click', () => {
+                // Nótese que seleccionamos el 'Elemento 5', para
+                // luego usando .prevAll(...) seleccionar sus hermanos
+                // previos desde el 'Elemento 4' hasta el principio
+                JsNode.select('ul > li:nth-child(5)').prevAll().css({
+                    color: 'orange',
+                    fontWeight: 'bold'
+                });
+            });
+
+            JsNode.select('.rojo').on('click', () => {
+                // Nótese que seleccionamos el 'Elemento 6', para
+                // luego usando .prevUntil(...) seleccionar sus hermanos
+                // previos hasta el 'Elemento 1' que no se incluye
+                JsNode.select('ul > li:nth-child(6)')
+                    .prevUntil('ul > li:nth-child(1)').css({
+                        color: 'red',
+                        fontWeight: 'bold'
+                    });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="azul">Poner en verde el 'Elemento 2' y en azul el 'Elemento 1'</button>
+        <button class="naranja">Poner en naranja el 'Elemento 4' y los anteriores</button>
+        <button class="rojo">Poner en rojo los elementos, desde 'Elemento 5' hasta el 'Elemento 2'</button>
+    </section>
+
+    <section>
+        <h2>Lista de elementos</h2>
+        <ul>
+            <li>Elemento 1</li>
+            <li>Elemento 2</li>
+            <li>Elemento 3</li>
+            <li>Elemento 4</li>
+            <li>Elemento 5</li>
+            <li>Elemento 6</li>
+        </ul>
+    </section>
+</body>
+
+</html>

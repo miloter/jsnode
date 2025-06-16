@@ -4,7 +4,7 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-06-06 
- * @version 0.3.0 2025-06-15
+ * @version 0.3.1 2025-06-16
  */
 class JsNode {
     #nodes;
@@ -957,7 +957,7 @@ class JsNode {
         if (newText === undefined) {
             let s = '';
             for (const node of this.#nodes) {
-                s += node.innerText;
+                s += node.textContent;
             }
 
             return s;
@@ -965,9 +965,9 @@ class JsNode {
             this.empty();
             this.#nodes.forEach((node, index) => {
                 if (typeof (newText) !== 'function') {
-                    node.innerText = newText;
+                    node.textContent = newText;
                 } else {
-                    node.innerText = newText(node.innerText, index);
+                    node.textContent = newText(node.textContent, index);
                 }
             });
 

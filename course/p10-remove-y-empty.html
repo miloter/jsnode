@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>                
+        JsNode.domLoaded().then(() => {            
+            JsNode.select('.remove').on('click', () => {
+                // .remove() Elimina cada elemento de la selección actual                
+                JsNode.select('ul > li').filterRegExp('^Elemento 3$').remove();
+            });            
+
+            JsNode.select('.empty').on('click', () => {
+                // .empty() Elimina todos los hijos de cada elemento
+                // de la selección actual
+                JsNode.select('ul').empty();            
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>        
+        <button class="remove">Eliminar el 'Elemento 3'</button>      
+        <button class="empty">Eliminar todos los elementos de la lista</button>
+    </section>
+
+    <section>
+        <h2>Lista de elementos</h2>
+        <ul>
+            <li><span>Elemento 1</span></li>
+            <li><span>Elemento 2</span></li>
+            <li><span>Elemento 3</span></li>
+            <li><span>Elemento 4</span></li>
+            <li><span>Elemento 5</span></li>            
+        </ul>
+    </section>
+</body>
+
+</html>

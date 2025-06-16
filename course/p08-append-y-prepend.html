@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>                
+        JsNode.domLoaded().then(() => {            
+            JsNode.select('.append').on('click', () => {
+                // .append(html|nodo) agrega texto como HTML o un nodo DOM
+                // después del último elemento hijo de cada uno de los
+                // elementos de la selección actual
+                JsNode.select('ul').append('<li><b>Último Elemento</b></li>');
+            });
+
+            JsNode.select('.prepend').on('click', () => {
+                // .append(html|nodo) agrega texto como HTML o un nodo DOM
+                // después del último elemento hijo de cada uno de los
+                // elementos de la selección actual
+                JsNode.select('ul').prepend('<li><b>Primer Elemento</b></li>');
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>        
+        <button class="append">
+            Establecer un nuevo elemento de lista al final con el HTML:<br>
+            &lt;b&gt;Último Elemento&lt;/b&gt;
+        </button>      
+        <button class="prepend">
+            Establecer un nuevo elemento de lista al principio con el HTML:<br>
+            &lt;b&gt;Primer Elemento&lt;/b&gt;
+        </button>      
+    </section>
+
+    <section>
+        <h2>Lista de elementos</h2>
+        <ul>
+            <li><span>Elemento 1</span></li>
+            <li><span>Elemento 2</span></li>
+            <li><span>Elemento 3</span></li>
+            <li><span>Elemento 4</span></li>
+            <li><span>Elemento 5</span></li>
+            <li><span>Elemento 6</span></li>
+        </ul>
+    </section>
+</body>
+
+</html>
