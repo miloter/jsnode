@@ -901,7 +901,7 @@ class JsNode {
      * @returns {JsNode} La misma selección actual.
      */
     each(callback) {
-        this.#nodes.forEach((node, index) => callback.apply(new JsNode(node), [index]));
+        this.#nodes.forEach((node, index) => callback.call(new JsNode(node), index));
 
         return this;
     }
