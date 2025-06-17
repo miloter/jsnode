@@ -777,15 +777,15 @@ class JsNode {
     }
 
     /**
-     * Devuelve el valor de una propiedad CSS, o establece el valor de
-     * una o varias propiedades CSS.
-     * @param {string|object} name Nombre de propiedad u objeto con
-     * nombres de propiedad y valores.
+     * Devuelve el valor de una propiedad CSS, establece el valor de una o
+     * varias propiedades CSS o borra los estilos establecidos por código.
+     * @param {string|object|undefined} name Nombre de propiedad, objeto con
+     * nombres de propiedad y valores o bien undefined para borrar el css.
      * @param {string|undefined} value Valor de la propiedad.
      * @returns {string|undefined} Valor de la propiedad, cuando solo
      * se recibe como argumento el nombre de la propiedad.
      */
-    css(name, value = undefined) {
+    css(name = undefined, value = undefined) {
         if (value !== undefined) {
             this.#nodes.forEach(node => {
                 node.style[name] = value;
@@ -798,6 +798,16 @@ class JsNode {
                         node.style[key] = name[key];
                     }
                 });
+                
+                return this;
+            } else if (name === undefined) {
+                this.#nodes.forEach(node => {
+                    // Las propiedades establecidas tienen clave numérica
+                    while (node.style[0]) {
+                        node.style[node.style[0]] = '';
+                    }                    
+                });
+
                 return this;
             } else {
                 return this.#nodes[0]?.style[name];

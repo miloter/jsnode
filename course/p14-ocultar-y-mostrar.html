@@ -1,0 +1,94 @@
+                                                    <!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .box {
+            width: 50px;
+            height: 50px;
+            background-color: rgb(126, 136, 75);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .flexbox-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .flexbox-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {            
+            JsNode.select('.hide').on('click', () => {
+                // Con el método .hide() ocultamos la selección                
+                JsNode.select('.flexbox-row').hide();
+                JsNode.select('.flexbox-column').hide();
+            });    
+
+            JsNode.select('.show').on('click', () => {
+                // Con el método .show() mostramos la selección
+                JsNode.select('.flexbox-row').show();
+                JsNode.select('.flexbox-column').show();
+            });    
+            
+            JsNode.select('.toggle').on('click', () => {
+                // Con el método .toggle() alternamos entre mostar u ocultar
+                // la selección, si está oculta o visible respectivamente
+                JsNode.select('.flexbox-row').toggle();
+                JsNode.select('.flexbox-column').toggle();
+            });                            
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>        
+        <button class="hide">Ocultar las cajas</button>
+        <button class="show">Mostrar las cajas</button>
+        <button class="toggle">Alternar las cajas</button>
+    </section>
+    <hr>
+    <section class="flexbox-row">
+        <div class="box">Caja 1</div>
+        <div class="box">Caja 2</div>
+        <div class="box">Caja 3</div>
+        <div class="box">Caja 4</div>
+        <div class="box">Caja 5</div>
+    </section>
+    <hr>
+    <section class="flexbox-column">
+        <div class="box">Caja 1</div>
+        <div class="box">Caja 2</div>
+        <div class="box">Caja 3</div>
+        <div class="box">Caja 4</div>
+        <div class="box">Caja 5</div>
+    </section>
+</body>
+
+</html>

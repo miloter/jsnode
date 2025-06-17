@@ -1,0 +1,120 @@
+                                                    <!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .box {
+            width: 50px;
+            height: 50px;
+            background-color: rgb(126, 136, 75);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .flexbox-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .flexbox-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            JsNode.select('.set-css').on('click', () => {
+                // Con el método .css(property, value) o el
+                // .css({ ..., propertyK: valueK, ... }) donde las propiedades
+                // propertyK iran en estilo camelCase podemos dar fácimente
+                // estilos en tiempo de ejecución
+                JsNode.select('.box').css({
+                    color: 'blue',
+                    backgroundColor: 'yellow',
+                    margin: '0.5rem'
+                });
+            });            
+
+            JsNode.select('.clear-css').on('click', () => {
+                // Con el método .css() se quitan todos los estilos establecidos
+                // mediante código en cada elemento de la selección
+                JsNode.select('.box').css();
+            });    
+
+            JsNode.select('.add-class').on('click', () => {
+                // Con el método .addClass(className) o bien el método
+                // .addClass('cl c2 ... cn') se establece la clase o clases
+                // dadas en la selección
+                JsNode.select('#fb-row').addClass('flexbox-row');
+                JsNode.select('#fb-column').addClass('flexbox-column');
+            });    
+
+            JsNode.select('.remove-class').on('click', () => {
+                // Con el método .removeClass(className) o bien el método
+                // .removeClass('cl c2 ... cn') se quita la clase o clases
+                // dadas en la selección
+                JsNode.select('#fb-row').removeClass('flexbox-row');
+                JsNode.select('#fb-column').removeClass('flexbox-column');
+            });    
+            
+            JsNode.select('.toggle-class').on('click', () => {
+                // Con el método .toggleClass(className) o bien el método
+                // .toggleClass('cl c2 ... cn') se pone o quita la clase o
+                // clases dadas en la selección, según este quitada o puesta
+                // la clase o clases
+                JsNode.select('#fb-row').toggleClass('flexbox-row');
+                JsNode.select('#fb-column').toggleClass('flexbox-column');
+            });                            
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="set-css">Dar estilos CSS a las cajas</button>        
+        <button class="clear-css">Quitar todos los estilos CSS dados por código a las cajas</button>
+        <button class="add-class">Agregar clases a las cajas</button>
+        <button class="remove-class">Quitar las clases a las cajas</button>
+        <button class="toggle-class">Alternar las clases a las cajas</button>
+    </section>
+    <hr>
+    <section id="fb-row">
+        <div class="box">Caja 1</div>
+        <div class="box">Caja 2</div>
+        <div class="box">Caja 3</div>
+        <div class="box">Caja 4</div>
+        <div class="box">Caja 5</div>
+    </section>
+    <hr>
+    <section id="fb-column">
+        <div class="box">Caja 1</div>
+        <div class="box">Caja 2</div>
+        <div class="box">Caja 3</div>
+        <div class="box">Caja 4</div>
+        <div class="box">Caja 5</div>
+    </section>
+</body>
+
+</html>
