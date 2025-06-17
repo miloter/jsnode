@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .form-field {
+            margin-bottom: 1rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {            
+            // Los elementos HTML tienen atributos como id o title y propiedades
+            // como checked, selected o disabled, la diferencia es que mientras
+            // los atributos admiten casi cualquier valor (id="unId"), las propiedades
+            // solo admiten presencia o ausencia, por ejemplo, el elemento
+            // <input type="radio" disabled> aparecerá deshabilitado por contener
+            // disabled, además hay que tener en cuenta que checked solo se admite
+            // en INPUT/RADIO, selected en SELECT y disabled en INPUT, SELECT y
+            // BUTTON
+
+            JsNode.select('.set-attr').on('click', () => {
+                // Con .attr(name, value) establecemos el valor del atributo
+                // name a value de cualquier elemento HTML. Con .attr({...})
+                // podemos establecer varios atributos en una única llamada.
+                // Con .attr(name) lo leeriamos
+                JsNode.select('#name').attr('placeholder', 'Introduzca su Nombre');
+                JsNode.select('#age').attr('placeholder', 'Introduzca su Edad');                
+            });
+            
+
+            // Inicialmente el INPUT/CHECKED 'Quiero un regalo' estará sin marcar
+            // por lo que no queremos que se pueda selecciona el tipo de envío.
+            // Es buena práctica seleccionar solo una vez si se
+            // va a reutlizar la selección
+            const checkbox = JsNode.select('#regalo');
+            
+            // Actualización inicial.
+            // Con .call(checkbox), hacemos que el this en la función sea
+            // igual a checkbox
+            actualizarRadios.call(checkbox);
+
+            JsNode.select('#regalo').on('click', function () {
+                // this es un JsNode conteniendo el INPUT/CHECKBOX
+                actualizarRadios.call(this);
+            });
+
+            function actualizarRadios() {
+                // Con .prop(propiedad) obtenemos un booleano que indica si
+                // la propiedad está presente o no lo está
+                const checked = this.prop('checked');
+                // Si 'Qiero un regalo' está marcado (checked === true)
+                // habilitamos los radios y si no está marcado, quitamos la
+                // selección de los radios y luego los deshabilitamos
+                // de una vez
+                const radios = JsNode.select('.radios [type="radio"]');
+                if (checked) {                    
+                    // Con .prop(name, value) estalecemos una única propiedad
+                    radios.prop('disabled', !checked);                    
+                } else {
+                    // Con .prop({...}) podemos establecer varias propiedades
+                    radios.prop({
+                        checked: checked,
+                        disabled: !checked
+                    });
+                }
+            }
+
+            JsNode.select('#form').on('submit', event => {
+                event.preventDefault();                
+                JsNode.select('#fields').html(/*html*/`
+                    <div>
+                        <strong>Nombre:</strong>
+                        <span> ${JsNode.select('#name').val()}</span>
+                    </div>
+                    <div>
+                        <strong>Edad:</strong>
+                        <span> ${JsNode.select('#age').val()}</span>
+                    </div>
+                    <div>
+                        <strong>Color:</strong>
+                        <span> ${JsNode.select(`#color option[value="${JsNode.select('#color').val()}"]`).text()}</span>
+                    </div>
+                    <div>
+                        <strong>Quiere regalo:</strong>
+                        <span> ${JsNode.select('#regalo').prop('checked') ? 'Sí' : 'No'}</span>
+                    </div>
+                `);       
+                if (JsNode.select('#regalo').prop('checked')) {
+                    JsNode.select('#fields').append(/*html*/`
+                        <div>
+                            <strong>Tipo de envío:</strong>
+                            <!-- Nótese como seleccionamos el radio marcado -->
+                            <span>
+                                 ${JsNode.select('.radios [type="radio"]').filter(function() {
+                                    return this.prop('checked')
+                                })
+                                // El texto está en la etiqueta
+                                .next().text()}
+                            </span>
+                        </div>
+                    `);
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="set-attr">Poner un placeholder a 'Nombre' y 'Edad'</button>
+    </section>
+
+    <section>
+        <h2>Formulario</h2>
+        <form id="form">
+            <div class="form-field">
+                <label for="name">Nombre</label>
+                <input type="text" id="name">
+            </div>
+            <div class="form-field">
+                <label for="age">Edad</label>
+                <input type="number" id="age">
+            </div>
+            <div class="form-field">
+                <label for="color">Color favorito</label>
+                <select id="color">
+                    <option value="" selected disabled>-- Seleccione un color --</option>
+                    <option value="red">Rojo</option>
+                    <option value="green">Verde</option>
+                    <option value="blue">Azul</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <input type="checkbox" id="regalo">
+                <label for="regalo">Quiero un regalo</label>
+            </div>
+            <div class="form-field radios">
+                <input type="radio" name="envioRegalo" id="recogidaTienda">
+                <label for="recogidaTienda">Recogida en tienda</label>
+                <br>
+                <input type="radio" name="envioRegalo" id="envioCorreos">
+                <label for="envioCorreos">Envio por correos</label>
+                <br>
+                <input type="radio" name="envioRegalo" id="envioMensajero">
+                <label for="envioMensajero">Envío por mensajero</label>
+            </div>
+            <button type="submit">Enviar</button>
+            &nbsp;
+            <button type="reset">Limpiar</button>
+        </form>
+        <section>
+            <h3>Campos Enviados</h3>
+            <div id="fields"></div>
+        </section>
+    </section>
+</body>
+
+</html>

@@ -839,7 +839,8 @@ class JsNode {
      * @param {string} pattern Patrón de expresión regular.
      * @param {string} [flags] Flags usados en la búsqueda, por defecto ninguno.     
      * @param {Function} callback Función de devolución de
-     * llamada opcional que recibirá un Array de n elementos con la forma:
+     * llamada opcional que recibirá como primer argumento un Array de n elementos
+     * con la forma:
      * 
      * [0]: Primer texto coincidente con el patrón.
      * 
@@ -851,9 +852,9 @@ class JsNode {
      * 
      * input: Texto con el que se compara el patrón.
      * 
-     * Además recibe como segundo argumento el nodo actual y como tercero el
-     * índice de dicho nodo en la selección. La función debe devolver true si
-     * acepta la coincidencia o false si no la acepta.
+     * Además recibe como segundo argumento el índice de dicho nodo en la selección.
+     * Dentro de la función this hará referencia al nodo actual como un JsNode.
+     * La función debe devolver true si acepta la coincidencia o false si no la acepta.
      * @returns {JsNode} Un objeto JsNode con los elementos que cumplan el patrón.
      */
     filterRegExp(pattern, flags = '', callback) {
@@ -863,7 +864,7 @@ class JsNode {
             if (typeof (callback) === 'function') {
                 res = re.exec(node.innerText)
                 if (res) {
-                    res = callback(res, node, index);
+                    res = callback.call(new JsNode(node), res, index);
                 }
                 // Para valores no booleanos
                 res = !!res;
@@ -909,7 +910,7 @@ class JsNode {
     /**
      * Devuelve un JsNode conteniendo los elementos filtrados de la selección actual.
      * @param {string|Function} selector Selector CSS o función de devolución de
-     * llamada que recibe el nodo actual y el índice en la lista de nodos, si
+     * llamada que recibe el nodo actual como un JsNode y el índice en la lista de nodos, si
      * devuelve true el nodo se agrega a la selección, y no se agrega si
      * devuelve false.     
      * @returns {JsNode} Un objeto JsNode con el resultado del filtrado.
@@ -919,7 +920,7 @@ class JsNode {
             let res;
 
             if (typeof(selector) === 'function') {
-                res = !!selector(node, index);
+                res = !!selector.call(new JsNode(node), index);
             } else {
                 res = node.matches(selector);
             }
