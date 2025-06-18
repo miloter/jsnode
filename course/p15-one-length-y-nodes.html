@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .box {
+            min-width: 120px;
+            min-height: 120px;
+            background-color: rgb(126, 136, 75);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .flexbox-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {
+            let animating = false;
+
+            // Permite esperar a que pase un tiempo
+            const sleep = (ms = 400) => new Promise(resolve => setTimeout(resolve, ms));
+
+            JsNode.select('.start-animation').on('click', async function () {
+                // Oculta el botón mientras la animación se ejecuta
+                this.hide();
+                // Muestra el botón para detener la animación
+                JsNode.select('.stop-animation').show();
+
+                // Selecciona todas las cajas
+                const boxes = JsNode.select('.box');
+            
+                // Para animar cada caja individualmente
+                const animate = async box => {
+                    box.css({ color: 'blue', backgroundColor: 'yellow', fontWeight: 'bold' });                    
+                    await sleep();
+                    box.css(); // Quita el CSS puesto mediante código
+                };
+
+                animating = true;
+                let i = 0; // Apunta a un elemento individual
+                while (animating) {
+                    // Cuando tenemos un JsNode con varios elementos,  a veces solo
+                    // queremos trabajar con uno en concreto, JsNode ofrece el
+                    // método .one(index = 0), que reduce la selección actual a un
+                    // único elemento a partir de un índice opcional.
+                    await animate(boxes.one(i));                    
+                    // La propiedad .length nos dice el número de elementos de la selección                
+                    if ((i + 1) < boxes.length) {
+                        i++;
+                    } else {
+                        i = 0;
+                    }
+                }                
+            });
+
+            JsNode.select('.stop-animation').on('click', async function () {
+                animating = false; // Para hacer que pare la animación
+                do {
+                    await sleep();
+                } while  (animating);
+
+                 // Oculta el botón para detener
+                this.hide();
+
+                // Muestra el botón para comenzar de nuevo
+                JsNode.select('.start-animation').show();
+            }).hide();            
+
+            JsNode.select('.nodes').on('click', () => {
+                // Con la propiedad .nodes podemos acceder a los elementos HTML
+                // nativos de la selección actual, .nodes es un Array de nodos
+                // elemento HTML                
+                for(const node of JsNode.select('.box').nodes) {
+                    // Esto nos permite acceder al DOM de bajo nivel
+                    node.textContent = node.outerHTML;
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="start-animation">Animar las cajas</button>
+        <button class="stop-animation">Parar la animación</button>
+        <button class="nodes">Sustituir 'Caja n' por un texto equivalente al HTML de la caja</button>
+    </section>
+    <hr>
+    <section class="flexbox-row">
+        <div class="box">Caja 1</div>
+        <div class="box">Caja 2</div>
+        <div class="box">Caja 3</div>
+        <div class="box">Caja 4</div>
+        <div class="box">Caja 5</div>
+    </section>
+</body>
+
+</html>
