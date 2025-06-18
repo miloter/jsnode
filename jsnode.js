@@ -24,6 +24,9 @@ class JsNode {
         if (!node.listeners) return;
 
         const listeners = node.listeners[eventName];
+        
+        if (!listeners) return;
+
         for (const listener of listeners) {
             node.removeEventListener(eventName, listener);
         }

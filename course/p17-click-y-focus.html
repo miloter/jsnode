@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {                        
+            JsNode.select('.click').on('click', () => {                
+                // Se puede realizar click en cualquier elemento
+                JsNode.select('#google').click();                
+            });                        
+
+            JsNode.select('.focus').on('click', () => {                
+                // Se puede poner el foco en cualquier elemento que tenga
+                // la capacidad de recibir el foco
+                JsNode.select('#email').focus();                
+            });                        
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>
+        <button class="click">Púlsame y yo haré click por ti en el enlace</button>        
+        <button class="focus">Púlsame y pondré el foco por ti en el cuadro de e-mail</button>
+    </section>
+    <hr>    
+    <form class="form">
+        <a href="https://www.google.com" id="google" target="_blank">Ir a Google</a>
+        <input type="text" id="name" placeholder="name">
+        <input type="email" id="email" placeholder="email">
+    </form>
+    </div>
+</body>
+
+</html>
