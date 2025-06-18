@@ -10,47 +10,45 @@
     <script>
         JsNode.domLoaded().then(() => {
             const menu1 = new JsNodeMenu('#multi-level-menu', {
+                orientation: 'vertical',
                 menu: /*html*/`
                     <ul>
-                        <li><a href="#">Home</a>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">About Us ></a>
                             <ul>
-                                <li><a href="#">About Us ></a>
+                                <li><a href="#">History</a></li>
+                                <li><a href="#">Team</a></li>
+                                <li><a href="#">Mission</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#">Services ></a>
+                            <ul>
+                                <li><a href="#">Web Design</a></li>
+                                <li><a href="#">Development</a></li>
+                                <li><a href="#">SEO</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#">Portfolio</a></li>
+                        <li><a href="#">Contact ></a>
+                            <ul>
+                                <li><a href="#">Alicante ></a>
                                     <ul>
-                                        <li><a href="#">History</a></li>
-                                        <li><a href="#">Team</a></li>
-                                        <li><a href="#">Mission</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="#">Services ></a>
-                                    <ul>
-                                        <li><a href="#">Web Design</a></li>
-                                        <li><a href="#">Development</a></li>
-                                        <li><a href="#">SEO</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="#">Portfolio</a></li>
-                                <li><a href="#">Contact ></a>
-                                    <ul>
-                                        <li><a href="#">Alicante ></a>
+                                        <li><a href="#">Capital</a></li>
+                                        <li><a href="#">Elche</a></li>
+                                        <li><a href="#">Alcoy ></a>
                                             <ul>
-                                                <li><a href="#">Capital</a></li>
-                                                <li><a href="#">Elche</a></li>
-                                                <li><a href="#">Alcoy ></a>
-                                                    <ul>
-                                                        <li><a href="#">Centro</a></li>
-                                                        <li><a href="#">Norte</a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li><a href="#">Valencia</a></li>
-                                        <li><a href="#">Castellón ></a>
-                                            <ul>
-                                                <li><a href="#">Norte</a></li>
                                                 <li><a href="#">Centro</a></li>
-                                                <li><a href="#">Sur</a></li>
+                                                <li><a href="#">Norte</a></li>
                                             </ul>
                                         </li>
+                                    </ul>
+                                </li>
+                                <li><a href="#">Valencia</a></li>
+                                <li><a href="#">Castellón ></a>
+                                    <ul>
+                                        <li><a href="#">Norte</a></li>
+                                        <li><a href="#">Centro</a></li>
+                                        <li><a href="#">Sur</a></li>
                                     </ul>
                                 </li>
                             </ul>

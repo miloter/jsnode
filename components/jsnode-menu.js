@@ -9,7 +9,8 @@ class JsNodeMenu {
         this.#options = {
             menu: /*html*/`
                 
-            `
+            `,
+            orientation: 'horizontal', // o 'vertical'
         };
         this.#updateAll(options);
     }
@@ -20,10 +21,10 @@ class JsNodeMenu {
         // Inyecta el menu
         this.#el.html(this.#options.menu);
 
-        // Ocultar los submenús inicialmente
-        JsNode.select('#multi-level-menu ul ul').hide();            
+        // Ocultar los submenús inicialmente        
+        JsNode.select(`.${JsNodeMenu.#styleUid} ul ul`).hide();            
 
-        JsNode.select('#multi-level-menu li').on('mouseenter', function () {
+        JsNode.select(`.${JsNodeMenu.#styleUid} li`).on('mouseenter', function () {
             const ul = this.select('ul').one();
             
             if (!ul.length) return;
@@ -43,10 +44,11 @@ class JsNodeMenu {
             JsNode.select('head').append(/*html*/`
                 <style ${JsNodeMenu.#styleUid}>
                     .${JsNodeMenu.#styleUid} {
+                        ${this.#options.orientation === 'horizontal' ? '': 'display: inline-block;'}
                         background-color: #333;
                         color: #fff;
-                    }
-
+                    }                    
+                    
                     .${JsNodeMenu.#styleUid} ul {
                         list-style: none;
                         padding: 0;
@@ -54,35 +56,30 @@ class JsNodeMenu {
                     }
 
                     .${JsNodeMenu.#styleUid} li {
-                        display: inline-block;
+                        display: ${this.#options.orientation === 'horizontal' ? 'inline-block' : 'block'};
                         position: relative;
                         padding: 0.5rem 1rem;
                     }
 
-                    .${JsNodeMenu.#styleUid} > ul > li > a {
+                    .${JsNodeMenu.#styleUid} ul li a {
                         color: white;
+                        text-decoration: none;
                     }
 
                     .${JsNodeMenu.#styleUid} li:hover {
                         background-color: #555;
-                    }
-
-                    .${JsNodeMenu.#styleUid} > ul > ul {
-                        left: 0;
-                    }
-
-                    .${JsNodeMenu.#styleUid} ul ul ul {
-                        left: 100%;
-                    }
+                    }                    
 
                     .${JsNodeMenu.#styleUid} ul ul {
-                        position: absolute;
-                        top: 100%;        
+                        position: absolute;                        
+                        left: ${this.#options.orientation === 'horizontal' ? '0' : '100'}%;                        
+                        top: ${this.#options.orientation === 'horizontal' ? '100' : '0'}%;                        
                         background-color: #444;
                         z-index: 1;
                     }
 
                     .${JsNodeMenu.#styleUid} ul ul ul {
+                        left: 100%;
                         top: 0;
                     }
 
@@ -91,10 +88,8 @@ class JsNodeMenu {
                         min-width: 150px;
                     }
 
-                    .${JsNodeMenu.#styleUid} ul ul li a {
-                        color: #fff;
+                    .${JsNodeMenu.#styleUid} ul ul li a {                        
                         padding: 10px;
-                        text-decoration: none;
                         display: block;
                     }
 
@@ -103,6 +98,6 @@ class JsNodeMenu {
                     }                    
                 </style>
             `);
-        }
+        }        
     }
 }

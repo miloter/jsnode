@@ -9,18 +9,19 @@
     <script src="jsnode-menu.js"></script>
     <script>
         JsNode.domLoaded().then(() => {
-            const menu1 = new JsNodeMenu('#multi-level-menu', {
+            const menu1 = new JsNodeMenu('#menu-horizontal', {
+                orientation: 'horizontal',
                 menu: /*html*/`
                     <ul>
                         <li><a href="#">Home</a></li>
-                        <li><a href="#">About Us</a>
+                        <li><a href="#">About Us ></a>
                             <ul>
                                 <li><a href="#">History</a></li>
                                 <li><a href="#">Team</a></li>
                                 <li><a href="#">Mission</a></li>
                             </ul>
                         </li>
-                        <li><a href="#">Services</a>
+                        <li><a href="#">Services ></a>
                             <ul>
                                 <li><a href="#">Web Design</a></li>
                                 <li><a href="#">Development</a></li>
@@ -60,7 +61,7 @@
 </head>
 
 <body>        
-    <nav id="multi-level-menu"></nav>
+    <nav id="menu-horizontal"></nav>
     <p style="flex-basis: 75%;">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Temporibus a quo accusantium eos officia repudiandae repellat corrupti quia impedit qui ducimus aliquid, est totam aspernatur dolor, illo ad magnam non rerum odit iusto? Vitae cumque sequi quia molestiae nam minus ad sunt unde placeat inventore optio dolorem, dolor, aperiam dolores pariatur, dicta cum sit! Quo quas sunt facere, sapiente id assumenda fugit? Accusantium ducimus, fugiat debitis temporibus, sit ea porro architecto corrupti adipisci perferendis suscipit! Similique, cum vitae assumenda corrupti maiores, ipsum doloribus labore perferendis at id eos repellat magnam dicta quod rem perspiciatis facere nihil voluptas. Ipsam fuga, qui voluptatibus odit, optio quas perferendis debitis beatae asperiores deleniti suscipit voluptates, facere natus nesciunt? Distinctio tempore laudantium ipsum a dolores sequi ratione, ut nam laboriosam quia, inventore maxime.</p>        
 </body>
 
