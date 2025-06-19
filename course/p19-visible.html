@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .box {
+            width: 200px;
+            height: 200px;                        
+            background-color: green;
+            color: white;
+            font-weight: bold;
+            padding: 3px;
+            border: 7px solid black;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .number {
+            max-width: 6rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>        
+        JsNode.domLoaded().then(() => {                                                
+            JsNode.select('.toggle').on('click', function() {
+                JsNode.select('.box').toggle();
+            });            
+
+            JsNode.select('.visible').on('click', function() {
+                // Con el método .visible([index = 0]) podemos saber
+                // si un elemento de la selección es o no visible
+                const visible = JsNode.select('.box').visible();
+                alert(`La caja ${visible ? 'sí' : 'no'} es visible`);
+            });            
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <section class="acciones">
+            <h2>Acciones</h2>
+            <button class="toggle">Ocultar/Mostrar la caja</button>
+            <button class="visible">¿La caja es visible?</button>
+        </section>        
+        <div class="box">
+            Contenido
+        </div>    
+    </div>
+</body>
+
+</html>

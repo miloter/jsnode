@@ -1,0 +1,72 @@
+                                                    <!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .box {
+            width: 50px;
+            height: 50px;
+            background-color: rgb(126, 136, 75);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .flexbox-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.domLoaded().then(() => {            
+            JsNode.select('.slice').on('click', () => {
+                // El método .slice(start = 0, end = undefined) nos permite
+                // seleccionar un subconjunto de la selección actual.
+                // Primero ocultamos todas las cajas
+                JsNode.select('.box').hide()
+                    // Ahora seleccionamos desde la segunda (posición 1), hasta
+                    // la anterior a la última (un índice negativo comienza desde
+                    // el final de la selección hacia el principio), téngase en
+                    // cuenta que start se tiene en cuenta, pero end no
+                    .slice(1, -1)
+                    // Ahora hacemos visible la selección
+                    .show();
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <section class="acciones">
+        <h2>Acciones</h2>        
+        <button class="slice">Mostrar las cajas entre la primera y la última</button>        
+    </section>
+    <hr>
+    <section class="flexbox-row">
+        <div class="box">Caja 1</div>
+        <div class="box">Caja 2</div>
+        <div class="box">Caja 3</div>
+        <div class="box">Caja 4</div>
+        <div class="box">Caja 5</div>
+    </section>    
+</body>
+
+</html>

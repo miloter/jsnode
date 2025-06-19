@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <script src="../jsnode.js"></script>
+    <script>        
+        JsNode.domLoaded().then(() => {
+            // Establece la URL sin recargar la página
+            history.replaceState(undefined, '', location.pathname + '?a=1&b=2#hola');
+            JsNode.select('.url').text(location.href);
+            JsNode.select('.qs').text(location.search);
+            // La propiedad .qsMap devuelve un objeto cuyas propiedades son
+            // los nombres de los parámetros de la cadena de consulta o
+            // query string, y sus valores son los valores de los parámetros
+            JsNode.select('.qsMap').html(`
+                <pre>${JSON.stringify(JsNode.qsMap, undefined, '\t')}</pre>
+            `);                        
+            // Como .qsMap es un objeto JavaScript, podemos acceder a cada
+            // par (param=value)
+            const body = JsNode.select('body');
+            const map = JsNode.qsMap;
+            body.append('<h3>Los parámetros son:</h3>')
+                // Con .children(-1) selecciona el último hijo
+                .children(-1).css('margin', '0');
+            for(const key in map) {
+                body.append(`
+                    <div>
+                        <b>${key}</b>=<span>${map[key]}</span>
+                    </div>
+                `).children(-1).css('margin', '0 0 0 2rem');
+            }
+        });
+    </script>
+</head>
+
+<body>    
+    <p>
+        <b>Su URL es: </b><span class="url"></span>
+    </p>
+    <p>
+        <b>Su cadena de consulta es: </b><span class="qs"></span>
+    </p>
+    <p>
+        <b>El mapa de la cadena de consulta es: </b><span class="qsMap"></span>
+    </p>    
+</body>
+
+</html>

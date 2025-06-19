@@ -1236,16 +1236,36 @@ class JsNode {
 
     /**
      * Selecciona los hijos de cada elemento de la selección actual.
-     * @param {string} Selector opcional que debe verificar cada hijo
-     * para agregarse a la selección.
+     * @param {string|number|undefined} Selector opcional que debe verificar cada hijo
+     * para agregarse a la selección o número de índice del
+     * hijo que será seleccionado. Si no se pasa ningún argumento o es
+     * undefined se devuelven todos los hijos.
      * @returns {JsNode}
      */
     children(selector = undefined) {
+        const selectorIsNumber = JsNode.isNumber(selector);
         let children = [];
 
         for (const node of this.#nodes) {
-            const list = Array.from(node.children).filter(node => {
-                return selector === undefined || node.matches(selector);
+            const array = Array.from(node.children);
+            let number;
+
+            if (selectorIsNumber) {
+                if (selector < 0) {
+                    number = array.length + selector;
+                } else {
+                    number = selector;
+                }
+            }
+            const list = array.filter((node, index) => {
+                if (selector === undefined) {
+                    return true;
+                } else if (selectorIsNumber) {
+                    // Para números de cadena
+                    return number == index;
+                } else {
+                    return node.matches(selector);
+                }
             });
             children = children.concat(list);
         }
@@ -1866,16 +1886,22 @@ class JsNode {
     }
 
     /**
-     * Devuelve un valor que indica si el primer elemento de
-     * la selección actual es visible.
-     * @returns {boolean}
+     * Devuelve un valor que indica si el elemento apuntado por el
+     * índice especificado es visible.
+     * @param {number|undefined} Un índice basado en cero al elemento
+     * que se desea comprobar. Por defecto se toma el primer elemento.
+     * @returns {boolean|undefined} Un booleano indicando el estado
+     * de visibilidad o undefined si no existe el elemento.
      */
-    get visible() {
-        if (this.#nodes[0]) {
-            const cs = getComputedStyle(this.#nodes[0]);
+    visible(index = 0) {
+        const node = this.#nodes[index];
+
+        if (node) {
+            const cs = getComputedStyle(node);
+
             return cs.display !== 'none' && cs.visibility !== 'hidden';
         } else {
-            return false;
+            return undefined;
         }
     }
 }
