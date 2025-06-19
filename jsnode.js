@@ -1201,16 +1201,12 @@ class JsNode {
     /**
      * Selecciona todos los ancestros de la selección actual.     
      * @param {string} selector Un selector opcional que hará que solo
-     * se seleccionen los ancestros que coincidan con dicho selector.
-     * @param {boolean} stopFirstSelector Solo aplicable si se suministra
-     * un selector. Si es true la búsqueda se detiene en el primer selector
-     * que que coincida, y si es false busca todos los ancestros que
-     * coincidan con el selector.
+     * se seleccionen los ancestros que coincidan con dicho selector.     
      * @param {string|undefined} until Selector opcional no incluido que
      * detendrá la búsqueda.
      * @returns {JsNode}
      */
-    parents(selector = undefined, stopFirstSelector = true, until = undefined) {
+    parents(selector = undefined, until = undefined) {
         const items = [];
 
         for (const node of this.#nodes) {
@@ -1218,10 +1214,7 @@ class JsNode {
             while (item && (until === undefined || !item.matches(until))) {
                 if (!items.includes(item) &&
                     (selector === undefined || item.matches(selector))) {
-                    items.push(item);
-                    if (selector !== undefined && stopFirstSelector) {
-                        break;
-                    }
+                    items.push(item);                    
                 }
                 item = item.parentElement;
             }
@@ -1238,7 +1231,7 @@ class JsNode {
      * @returns {JsNode}
      */
     parentsUntil(selector = undefined) {
-        return this.parents(undefined, false, selector);
+        return this.parents(undefined, selector);
     }
 
     /**
@@ -1604,7 +1597,7 @@ class JsNode {
                 return undefined;
             }
         } else {
-            if (typeof (newWidth) === 'number') {
+            if (JsNode.isNumber(newWidth)) {
                 newWidth += 'px';
             }
             this.#nodes.forEach((node, index) => {
@@ -1612,7 +1605,7 @@ class JsNode {
                     node.style.width = newWidth;
                 } else {
                     let width = newWidth(parseFloat(getComputedStyle(node).width), index);
-                    if (typeof (width) === 'number') {
+                    if (JsNode.isNumber(width)) {
                         width += 'px';
                     }
                     node.style.width = width;
@@ -1641,7 +1634,7 @@ class JsNode {
                 return undefined;
             }
         } else {
-            if (typeof (newHeight) === 'number') {
+            if (JsNode.isNumber(newHeight)) {
                 newHeight += 'px';
             }
             this.#nodes.forEach((node, index) => {
@@ -1649,7 +1642,7 @@ class JsNode {
                     node.style.height = newHeight;
                 } else {
                     let height = newHeight(parseFloat(getComputedStyle(node).height), index);
-                    if (typeof (height) === 'number') {
+                    if (JsNode.isNumber(height)) {
                         height += 'px';
                     }
                     node.style.height = height;
@@ -1681,7 +1674,7 @@ class JsNode {
                 return undefined;
             }
         } else {
-            if (typeof (newWidth) === 'number') {
+            if (JsNode.isNumber(newWidth)) {
                 newWidth += 'px';
             }
             this.#nodes.forEach((node, index) => {
@@ -1692,7 +1685,7 @@ class JsNode {
                     node.style.width = newWidth;
                 } else {
                     let width = newWidth(parseFloat(cs.width) + paddings, index);
-                    if (typeof (width) === 'number') {
+                    if (JsNode.isNumber(width)) {
                         width += 'px';
                     }
                     node.style.width = width;
@@ -1726,7 +1719,7 @@ class JsNode {
                 return undefined;
             }
         } else {
-            if (typeof (newHeight) === 'number') {
+            if (JsNode.isNumber(newHeight)) {
                 newHeight += 'px';
             }
             this.#nodes.forEach((node, index) => {
@@ -1737,7 +1730,7 @@ class JsNode {
                     node.style.height = newHeight;
                 } else {
                     let height = newHeight(parseFloat(cs.height) + paddings, index);
-                    if (typeof (height) === 'number') {
+                    if (JsNode.isNumber(height)) {
                         height += 'px';
                     }
                     node.style.height = height;
@@ -1777,7 +1770,7 @@ class JsNode {
                 return undefined;
             }
         } else {
-            if (typeof (newWidth) === 'number') {
+            if (JsNode.isNumber(newWidth)) {
                 newWidth += 'px';
             }
             this.#nodes.forEach((node, index) => {
@@ -1790,13 +1783,66 @@ class JsNode {
                     node.style.width = newWidth;
                 } else {
                     let width = newWidth(parseFloat(cs.width) + extra, index);
-                    if (typeof (width) === 'number') {
+                    if (JsNode.isNumber(width)) {
                         width += 'px';
                     }
                     node.style.width = width;
                 }
                 // A la anchura hay que restarle las dimensioes extra
                 node.style.width = (parseFloat(cs.width) - extra) + 'px';
+            });
+
+            return this;
+        }
+    }
+
+    /**
+     * Devuelve o establece la altura de la seleción con el padding y el borde
+     * pero sin el margin. Si es una devolución solo se devuelve respecto
+     * al primer elemento de la selección.
+     * @param {number|string|Function|boolean} newHeight Valor de la nueva altura.
+     * Los números se convierten a cadenas en píxeles, si es una función se
+     * llama pasándole el ancho actual y el índice de cada elemento, y se
+     * establece el nuevo ancho en el valor retornado. Si es un booelano con
+     * valor true, se incluye el margin.
+     * @param {boolean} Si es true se incluye el margin, y no se incluye en
+     * caso contrario.
+     * @returns {JsNode}
+     */
+    outerHeight(newHeight = undefined, withMargin = false) {
+        if (newHeight === undefined || typeof (newHeight) === 'boolean') {
+            if (this.#nodes[0]) {
+                const cs = getComputedStyle(this.#nodes[0]);
+                return parseFloat(cs.height) +
+                    parseFloat(cs.paddingTop) +
+                    parseFloat(cs.paddingBottom) +
+                    parseFloat(cs.borderTopWidth) +
+                    parseFloat(cs.borderBottomWidth) +
+                    (newHeight ? (parseFloat(cs.marginTop) + parseFloat(cs.marginBottom)) : 0);
+            } else {
+                return undefined;
+            }
+        } else {
+            if (JsNode.isNumber(newHeight)) {
+                newHeight += 'px';
+            }
+            this.#nodes.forEach((node, index) => {
+                const cs = getComputedStyle(node);
+                const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) +
+                    parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth) +
+                    (withMargin ? (parseFloat(cs.marginTop) + parseFloat(cs.marginBottom)) : 0);
+
+                if (typeof (newHeight) !== 'function') {
+                    node.style.height = newHeight;
+                } else {
+                    let height = newHeight(parseFloat(cs.height) + extra, index);
+                    if (JsNode.isNumber(height)) {
+                        height += 'px';
+                    }
+                    node.style.height = height;
+                }
+                // A la anchura hay que restarle las dimensioes extra
+                node.style.height = (parseFloat(cs.height) - extra) + 'px';
             });
 
             return this;

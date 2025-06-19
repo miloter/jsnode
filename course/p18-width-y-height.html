@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .box {
+            width: 200px;
+            height: 200px;                        
+            background-color: green;
+            color: white;
+            font-weight: bold;
+            padding: 3px;
+            border: 7px solid black;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .number {
+            max-width: 6rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>        
+        JsNode.domLoaded().then(() => {                        
+            const box = JsNode.select('.box');
+
+            // Actualizamos valores
+            function updateMetrics() {
+                JsNode.select('.width').val(Math.round(box.width()));            
+                JsNode.select('.height').val(Math.round(box.height()));            
+                JsNode.select('.innerWidth').val(Math.round(box.innerWidth()));            
+                JsNode.select('.innerHeight').val(Math.round(box.innerHeight()));            
+                JsNode.select('.outerWidth').val(Math.round(box.outerWidth()));            
+                JsNode.select('.outerHeight').val(Math.round(box.outerHeight()));            
+                JsNode.select('.outerWidth-true').val(Math.round(box.outerWidth(true)));            
+                JsNode.select('.outerHeight-true').val(Math.round(box.outerHeight(true)));
+            }
+            updateMetrics();
+
+            // Controladores de evento de los INPUT/NUMBER
+            JsNode.select('.width').on('change', function() {
+                box.width(this.val());                
+                updateMetrics();
+            });
+            JsNode.select('.height').on('change', function() {
+                box.height(this.val());                
+                updateMetrics();
+            });
+            JsNode.select('.innerWidth').on('change', function() {
+                box.innerWidth(this.val());                
+                updateMetrics();
+            });
+            JsNode.select('.innerHeight').on('change', function() {
+                box.innerHeight(this.val());                
+                updateMetrics();
+            });
+            JsNode.select('.outerWidth').on('change', function() {
+                box.outerWidth(this.val());                
+                updateMetrics();
+            });
+            JsNode.select('.outerHeight').on('change', function() {
+                box.outerHeight(this.val());                
+                updateMetrics();
+            });
+            JsNode.select('.outerWidth-true').on('change', function() {
+                box.outerWidth(this.val(), true);                
+                updateMetrics();
+            });
+            JsNode.select('.outerHeight-true').on('change', function() {
+                box.outerHeight(this.val(), true);                
+                updateMetrics();
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <section class="acciones">
+            <h2>Acciones</h2>
+            <div>
+                <div>Anchura del contenido</div>
+                <b>width:</b> <input type="number" class="number width">
+            </div>
+            <div>
+                <div>Altura del contenido</div>
+                <b>height:</b> <input type="number" class="number height">
+            </div>
+            <div>
+                <div>Anchura del contenido + padding horizontal</div>
+                <b>innerWidth: </b> <input type="number" class="number innerWidth">
+            </div>
+            <div>
+                <div>Altura del contenido + padding vertical</div>
+                <b>innerHeight:</b> <input type="number" class="number innerHeight">
+            </div>
+            <div>
+                <div>Anchura del contenido + (padding + border) horizontal</div>
+                <b>outerWidth:</b> <input type="number" class="number outerWidth">
+            </div>
+            <div>
+                <div>Altura del contenido + (padding + border) vertical</div>
+                <b>outerHeight:</b> <input type="number" class="number outerHeight">
+            </div>
+            <div>
+                <div>Anchura del contenido + (padding + border + margin) horizontal</div>
+                <b>outerWidth-true:</b> <input type="number" class="number outerWidth-true">
+            </div>
+            <div>
+                <div>Altura del contenido + (padding + border + margin) vertical</div>
+                <b>outerHeight-true:</b> <input type="number" class="number outerHeight-true">
+            </div>
+        </section>        
+        <div class="box">
+            Contenido
+        </div>    
+    </div>
+</body>
+
+</html>
