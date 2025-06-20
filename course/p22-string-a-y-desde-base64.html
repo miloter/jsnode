@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .fbh {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 1rem;
+            margin: 0.5rem auto;
+        }
+        .fbc {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }        
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>        
+        JsNode.domLoaded().then(() => {
+            const taTexto = JsNode.select('.texto');
+            const taBase64 = JsNode.select('.base64');
+
+            JsNode.select('.to-base64').on('click', () => {
+                taBase64.val(JsNode.strToB64(taTexto.val()));
+            });
+
+            JsNode.select('.to-texto').on('click', () => {
+                taTexto.val(JsNode.b64ToStr(taBase64.val()));
+            });
+        });
+    </script>
+</head>
+
+<body>    
+    <section class="fbc">
+        <div class="fbh">
+            <h3>Cadena de texto normal</h3>
+            <button type="button" class="to-base64">Convertir a base 64</button>
+        </div>
+        <textarea class="texto" rows="16" cols="80"></textarea>
+    </section>    
+
+    <section class="fbc">
+        <div class="fbh">
+            <h3>Resultado en base 64</h3>
+            <button type="button" class="to-texto">Convertir a texto</button>
+        </div>
+        <textarea class="base64" rows="16" cols="80"></textarea>
+    </section>    
+</body>
+
+</html>
