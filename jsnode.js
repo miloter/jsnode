@@ -4,9 +4,13 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-06-06 
- * @version 0.3.1 2025-06-16
+ * @version 0.4.0 2025-06-20
  */
 class JsNode {
+    static #dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    static #dayNames3L = JsNode.#dayNames.map(d => d.substring(0, 3));
+    static #monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    static #monthNames3L = JsNode.#monthNames.map(m => m.substring(0, 3));
     #nodes;
 
     /**
@@ -239,13 +243,13 @@ class JsNode {
      *      year,           // Año
      *      mon,            // Mes (1: enero)
      *      mday,           // Día del mes
-     *      hours,          // Hora con 2 dígitos
-     *      minutes,        // Minutos con 2 dígitos
-     *      seconds,        // Segundos con 2 dígitos
-     *      milliseconds,   // Milisegundos con 3 dígitos
-     *      wday,           // Dia de las semana (0: domingo)
-     *      weekday,        // Nombre del día de la semana (string)
-     *      month,          // Nombre del mes (string)
+     *      hours,          // Horas
+     *      minutes,        // Minutos
+     *      seconds,        // Segundos
+     *      milliseconds,   // Milisegundos
+     *      wday,           // Dia de las semana (1: lunes, ..., 7: domingo)
+     *      weekday,        // Nombre del día de la semana (string): lunes, ..., domingo
+     *      month,          // Nombre del mes (string): enero, ..., diciembre
      *      yday,           // Días transcurridos desde el principio del año
      *      epoch,          // Milisegundos desde 1970-01-01 00:00:00.000 UTC
      *      offset          // Diferencia en minutos entre UTC y la hora local: UTC - Local
@@ -258,9 +262,7 @@ class JsNode {
     static dateParts(date = undefined) {
         // Expresión regular para extraer los componentes
         const RE_DATE = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d).(\d{3})Z$/;
-        const datePartsNames = ['year', 'mon', 'mday', 'hours', 'minutes', 'seconds', 'milliseconds'];
-        const dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-        const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        const datePartsNames = ['year', 'mon', 'mday', 'hours', 'minutes', 'seconds', 'milliseconds'];        
         const parts = {};
 
         // Para evitar efectos secundarios
@@ -279,16 +281,16 @@ class JsNode {
 
         const parseParts = RE_DATE.exec(date.toISOString());
         // Agrega los componentes extra
-        parseParts.push(wday, dayNames[wday], monthNames[parts.mon - 1]);
+        parseParts.push(wday, JsNode.#dayNames[wday], JsNode.#monthNames[parts.mon - 1]);
 
         // Calcula los componentes base
         datePartsNames.forEach((name, index) => parts[name] = parseInt(parseParts[index + 1]));
 
         // Agrega los componentes extra
-        parts.weekday = dayNames[wday];
+        parts.weekday = JsNode.#dayNames[wday];
         // El día lo modifica para 1: lunes, ... 7: domingo
         parts.wday = (wday === 0 ? 7 : wday);
-        parts.month = monthNames[parts.mon - 1];
+        parts.month = JsNode.#monthNames[parts.mon - 1];
         // Para calcular los días desde el principio del año, se crea una nueva
         // fecha representando el 1 de enero del año de la fecha argumento
         const janOne = new Date(date.getFullYear(), 0, 1);
@@ -301,22 +303,7 @@ class JsNode {
         parts.offset = date.getTimezoneOffset();
 
         return parts;
-    }
-
-    /**
-     * Devuelve un valor que indica si un año es bisiesto.
-     * @param {number} year Año que se comprobará.
-     * @returns {boolean}
-     */
-    static isLeapYear(year) {
-        if (
-            ((year % 4) === 0 && (year % 100) !== 0) ||
-            (year % 400) === 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    }    
 
     /**
      * Da formato de cadena a una fecha a partir de una cadena de formato:
@@ -457,6 +444,226 @@ class JsNode {
         return out.join('');
     }
 
+    /**
+     * Convierte una cadena de fecha a una fecha JavaScript a partir de un formato:
+     * {
+     *
+     *      'D': Abreviatura del día de la semana (tres letras).
+     *      'F': Nombre del mes completo.
+     *      'G': Hora sin ceros.
+     *      'H': Hora con ceros.
+     *      'L': Si el año es bisiesto devuelve '1', si no '0'.
+     *      'M': Abreviatura del mes (tres letras).
+     *      'U': Milisegundos desde 1970-01-01 00:00:00.000 UTC.
+     *      'Y': Año con 4 cifras.
+     *      'Z': Diferencia en minutos entre UTC y la hora local: UTC - Local.                    
+     *      'd': Dia del mes con ceros.                    
+     *      'i': Minutos con ceros.                    
+     *      'j': Día del mes sin ceros.                    
+     *      'l': Día de la semana en letra completo.                    
+     *      'm': Mes con ceros.                    
+     *      'n': Mes sin ceros.                    
+     *      's': Segundos con ceros.                    
+     *      't': Número de días del mes (28 a 31)                    
+     *      'u': Millisegundos con ceros.                    
+     *      'w': Día de la semana en número (1: lunes, ..., 7: domingo).                    
+     *      'y': Año con dos cifras.                    
+     *      'z': Días transcurridos desde el principio del año.                    
+     *      '\\': Escape. Por ejemplo, H literal se pone como \\H.
+     * 
+     * }
+     * 
+     * @param {string} format Formato de cadena para la fecha siguiendo los
+     * formatos admitidos.     
+     * @param {string} date Fecha en forma de string que debe verificar el
+     * formato del primer argumento.
+     * @returns {Date|NaN} Una fecha JavaScript si la conversión es correcta o
+     * NaN si no se puede convertir.
+     */
+    static dateParse(format = 'd/m/Y', date = '01/01/1970') {        
+        // Patrón de expresión regular que se irá formando
+        const pattern = ['^'];
+        // Contendrá los caracteres de formato en orden de grupo de captura.
+        // Por ejemplo: ['d', 'm', 'Y', 'H', 'i', 's', 'u']        
+        const charsGroup = [];
+        let isEscape = false;
+
+        for (const ch of format) {
+            if (isEscape) {
+                // Escapa el caracter de escape en las expresiones regulares
+                pattern.push((ch === '\\' ? ch : '') + ch);
+                isEscape = false;
+                continue;
+            }
+            switch (ch) {
+                case 'D': // Abreviatura del día de la semana (tres letras)
+                    pattern.push(`(${JsNode.#dayNames3L.join('|')})`);
+                    charsGroup.push(ch);
+                    break;
+                case 'F': // Nombre del mes completo
+                    pattern.push(`(${JsNode.#monthNames.join('|')})`);
+                    charsGroup.push(ch);
+                    break;
+                case 'G': // Hora sin ceros
+                    pattern.push('(\\d{1,2})')
+                    charsGroup.push(ch);
+                    break;
+                case 'H': // Hora con ceros
+                    pattern.push('(\\d{2})')
+                    charsGroup.push(ch);
+                    break;
+                case 'L': // Si el año es bisiesto devuelve '1', si no '0'
+                    pattern.push('([01])')
+                    charsGroup.push(ch);
+                    break;
+                case 'M': // Abreviatura del mes (tres letras)
+                    pattern.push(`(${JsNode.#monthNames3L.join('|')})`);
+                    charsGroup.push(ch);
+                    break;
+                case 'U': // Milisegundos desde 1970-01-01 00:00:00.000 UTC
+                    pattern.push('(-?\\d{1,16})');
+                    charsGroup.push(ch);
+                    break;
+                case 'Y': // Año con 4 cifras
+                    pattern.push('(\\d{4})');
+                    charsGroup.push(ch);                    
+                    break;
+                case 'Z': // Diferencia en minutos entre UTC y la hora local: UTC - Local
+                    pattern.push('(-?\\d{1,3})');
+                    charsGroup.push(ch);
+                    break;
+                case 'd': // Dia del mes con ceros
+                    pattern.push('(\\d{2})');
+                    charsGroup.push(ch);
+                    break;
+                case 'i': // Minutos con ceros
+                    pattern.push('(\\d{2})');
+                    charsGroup.push(ch);
+                    break;
+                case 'j': // Día del mes sin ceros
+                    pattern.push('(\\d{1,2})');
+                    charsGroup.push(ch);
+                    break;
+                case 'l': // Día de la semana en letra completo
+                    pattern.push(`(${JsNode.#dayNames.join('|')})`);
+                    charsGroup.push(ch);
+                    break;
+                case 'm': // Mes con ceros
+                    pattern.push('(\\d{2})');
+                    charsGroup.push(ch);
+                    break;
+                case 'n': // Mes sin ceros
+                    pattern.push('(\\d{1,2})');
+                    charsGroup.push(ch);
+                    break;
+                case 's': // Segundos con ceros
+                    pattern.push('(\\d{2})');
+                    charsGroup.push(ch);
+                    break;
+                case 't': // Número de días del mes (28 a 31)
+                    pattern.push('(\\d{2})');
+                    charsGroup.push(ch);
+                    break;
+                case 'u': // Millisegundos con ceros
+                    pattern.push('(\\d{3})');
+                    charsGroup.push(ch);
+                    break;
+                case 'w': // Día de la semana en número (1: lunes, ..., 7: domingo)
+                    pattern.push('([1-7])');
+                    charsGroup.push(ch);
+                    break;
+                case 'y': // Año con dos cifras
+                    pattern.push('(\\d{2})');
+                    charsGroup.push(ch);
+                    break;
+                case 'z': // Días transcurridos desde el principio del año
+                    pattern.push('(\\d{1,3})');
+                    charsGroup.push(ch);
+                    break;
+                case '\\': // Escape
+                    isEscape = true;
+                    break;
+                default:
+                    // Si es un metacarácter de expresión regular lo escapa
+                    const isMeta = ['^', '$', '|', '.', '?', '*', '+',
+                        '(', ')', '[', ']', '{', '}'                        
+                    ].includes(ch);
+                    pattern.push((isMeta ? '\\' : '') + ch);                    
+            }
+        }
+        pattern.push('$');
+
+        const res = date.match(pattern.join(''));
+        const mapFormat = {};
+        if (res) {
+            // Mapea los valores en variables de formato
+            for(let i = 0; i < charsGroup.length; i++) {
+                mapFormat[charsGroup[i]] = res[i + 1];
+            }
+            // La fecha solo se puede construir si existe al menos el Año
+            let year, month = 0, day = 1, hours = 0, minutes = 0, seconds = 0, milliseconds = 0;
+            if (mapFormat.Y) {
+                year = mapFormat.Y;
+            } else if (mapFormat.y) {
+                // Toma los dos primeros dígitos del año actual
+                year = new Date().getFullYear().toString()
+                    .padStart(4, '0').substring(0, 2) + mapFormat.y;
+            }
+            if (mapFormat.m) {
+                month = parseInt(mapFormat.m) - 1;
+            } else if (mapFormat.n) {
+                month = parseInt(mapFormat.n) - 1;
+            } else if (mapFormat.F) {
+                month = JsNode.#monthNames.indexOf(mapFormat.F);
+            } else if (mapFormat.M) {
+                month = JsNode.#monthNames3L.indexOf(mapFormat.M);
+            }
+            if (mapFormat.d) {
+                day = mapFormat.d;
+            } else if (mapFormat.j) {
+                day = mapFormat.j;
+            }
+            if (mapFormat.H) {
+                hours = mapFormat.H;
+            } else if (mapFormat.G) {
+                hours = mapFormat.G;
+            }
+            if (mapFormat.i) {
+                minutes = mapFormat.i;
+            }
+            if (mapFormat.s) {
+                seconds = mapFormat.s;
+            }
+            if (mapFormat.u) {
+                milliseconds = mapFormat.u;
+            }
+            
+            if (year !== undefined) {
+                return new Date(year, month, day, hours, minutes, seconds, milliseconds);
+            } else if (mapFormat.U) {
+                return new Date(parseInt(mapFormat.U));
+            } else {
+                return NaN;
+            }            
+        } else {
+            return NaN;
+        }        
+    }
+
+    /**
+     * Devuelve un valor que indica si un año es bisiesto.
+     * @param {number} year Año que se comprobará.
+     * @returns {boolean}
+     */
+    static isLeapYear(year) {
+        if (
+            ((year % 4) === 0 && (year % 100) !== 0) ||
+            (year % 400) === 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Codifica los pares (nombre: valor) de un objeto, a un formato

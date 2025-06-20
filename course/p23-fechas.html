@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>    
+    <style>
+        .section {
+            margin-bottom: 1rem;
+        }
+        .fb-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #formateada {
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>        
+        JsNode.domLoaded().then(() => {
+            // Inicia con la fecha actual en formato ISO apta para input/datetime-local.
+            // Formato para JsNode.dateFormat(format, [date= new Date()])
+            const formatoSimple = 'Y-m-dTH:i';
+            // Con JsNode.dateFormat(format, [date= new Date()]) es sencillo
+            // establecer la propiedad value de un input/datetime-local a
+            // partir de una fecha
+            JsNode.select('#fecha-local').val(JsNode.dateFormat(formatoSimple));   
+
+            // En el ejemplo convertiremos esta fecha a una fecha JavaScript
+            const fecha = 'viernes, 20 de junio de 2025 22:21 (Hora local)';
+            const formatoComplejo = 'l, d \\de F \\de Y H:i (\\Hora \\loca\\l)';            
+            JsNode.select('#fecha').text(fecha);
+            
+            JsNode.select('#dateParts').on('click', () => {
+                // Leemos las partes de una fecha
+                const parts = JsNode.dateParts(new Date(JsNode.select('#fecha-local').val()));
+                JsNode.select('#partes').empty()                                                
+                    .append(`<li><b>Día del mes (mday):</b> <span>${parts.mday}</span></li>`)
+                    .append(`<li><b>Mes (mon):</b> <span>${parts.mon}</span></li>`)
+                    .append(`<li><b>Año (year):</b> <span>${parts.year}</span></li>`)
+                    .append(`<li><b>Horas (hours):</b> <span>${parts.hours}</span></li>`)
+                    .append(`<li><b>Minutos (minutes):</b> <span>${parts.minutes}</span></li>`)
+                    .append(`<li><b>Segundos (seconds):</b> <span>${parts.seconds}</span></li>`)
+                    .append(`<li><b>Milisegundos (milliseconds):</b> <span>${parts.milliseconds}</span></li>`)
+                    .append(`<li><b>Día de la semana (wday):</b> <span>${parts.wday}</span></li>`)
+                    .append(`<li><b>Nombre del día de la semana (weekday):</b> <span>${parts.weekday}</span></li>`)
+                    .append(`<li><b>Nombre del mes (month):</b> <span>${parts.month}</span></li>`)
+                    .append(`<li><b>Días transcurridos desde el principio del año (yday):</b> <span>${parts.yday}</span></li>`)
+                    .append(`<li><b>Milisegundos desde 1970-01-01 00:00:00.000 UTC (epoch):</b> <span>${parts.epoch}</span></li>`)
+                    .append(`<li><b>Diferencia en minutos entre UTC y la hora local, UTC - Local (offset):</b> <span>${parts.offset}</span></li>`)
+            });
+
+            JsNode.select('#dateFormat').on('click', () => {
+                JsNode.select('#formateada').text(
+                    // Las posibilidades de formato permiten expresar fechas complejas
+                    JsNode.dateFormat(formatoComplejo,
+                        new Date(JsNode.select('#fecha-local').val()))
+                    );
+            });            
+
+            JsNode.select('#dateParse').on('click', () => {
+                // Obtenemos la fecha JavaScript
+                const date = JsNode.dateParse(formatoComplejo, fecha);
+                // Ahora solo tenemos que pasarla a cadena con el formato requerido
+                JsNode.select('#fecha-local').val(JsNode.dateFormat(formatoSimple, date));
+            });
+        });
+    </script>
+</head>
+
+<body>    
+    <div class="section">
+        <span>Fecha: </span> <input type="datetime-local" id="fecha-local">
+    </div>    
+    <div class="section">
+        <div class="fb-column">
+            <button id="dateParts">Obtener las partes de la fecha</button>
+            <button id="dateFormat">Mostrarla como por ejemplo, viernes, 20 de junio de 2025 17:43 (Hora local)</button>
+            <button id="dateParse">Establecer la fecha <b id="fecha"></b> en el control de fecha</button>
+        </div>
+    </div>
+    <ul id="partes"></ul>
+    <p id="formateada"></p>
+</body>
+
+</html>
