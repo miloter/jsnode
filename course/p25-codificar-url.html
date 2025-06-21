@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .fb-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 1rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        // Vamos a usar $ como sustituto de <JsNode.select> y $$ de JsNode
+        JsNode.use$().domLoaded().then(() => {
+            $('#objectToUrlEncoded').on('click', () => {
+                // La función de utilidad JsNode.objectToUrlEncoded({...}) nos
+                // devuelve una URL codificada a partir de la sintaxis de objeto
+                // { p1: v1, ..., pn: vn }
+                $('#objectToUrlEncodedOut').val(
+                    $$.objectToUrlEncoded({
+                        a: $('#a').val(),
+                        b: $('#b').val()
+                    })
+                );
+            });
+
+            $('#randDec').on('click', () => {
+                // La función de utilidad randDec(min, max) nos permite
+                // obtener un decimal aleatorio en el rango [min, max]
+                $('#randDecOut').val(
+                    $$.round($$.randDec($('#minDec').val(), $('#maxDec').val()), 5)
+                );
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="fb-row">
+        <label>
+            a=<input type="text" id="a" value="melón" size="8">
+        </label>
+        <label>
+            b=<input type="text" id="b" value="café" size="8">
+        </label>
+        <button id="objectToUrlEncoded">Codificar</button>
+        <input type="text" id="objectToUrlEncodedOut" size="32">
+    </div>
+</body>
+
+</html>

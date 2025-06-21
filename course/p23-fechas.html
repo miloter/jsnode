@@ -70,6 +70,11 @@
                 // Ahora solo tenemos que pasarla a cadena con el formato requerido
                 JsNode.select('#fecha-local').val(JsNode.dateFormat(formatoSimple, date));
             });
+
+            JsNode.select('#isLeapYear').on('click', () => {
+                const year = new Date(JsNode.select('#fecha-local').val()).getFullYear();
+                alert(`El año ${year}, ${JsNode.isLeapYear(year) ? 'sí' : 'no'} es bisiesto`);
+            });
         });
     </script>
 </head>
@@ -83,6 +88,7 @@
             <button id="dateParts">Obtener las partes de la fecha</button>
             <button id="dateFormat">Mostrarla como por ejemplo, viernes, 20 de junio de 2025 17:43 (Hora local)</button>
             <button id="dateParse">Establecer la fecha <b id="fecha"></b> en el control de fecha</button>
+            <button id="isLeapYear">¿Es bisiesto el año en el control de fecha?</button>
         </div>
     </div>
     <ul id="partes"></ul>

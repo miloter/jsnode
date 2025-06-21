@@ -1,3 +1,7 @@
+// Por si se desea usar el símbolo $. Se usa <var> para poder
+// ser compatible con librerías que usen dicho símbolo.
+var $, $$;
+
 /**
  * @summary JsNode es similar a un jQuery reducido usando solo ES6+ y
  * el sistema de Promises/async/await donde es necesario.
@@ -97,6 +101,20 @@ class JsNode {
             credentials: 'include',
             method
         }).then(r => JsNode.#buildResponse(r, contentType));
+    }
+
+    /**
+     * Este método permite usar $ como sustituto de <JsNode.select>.
+     * @returns {JsNode} Una referencia a la clase.
+     */
+    static use$() {
+        if ($) {
+            console.warn('$ ya estaba definido. Se sobrescribe con <JsNode.select>');
+        }        
+        $ = JsNode.select;
+        $$ = JsNode;
+        
+        return JsNode;
     }
 
     /**
@@ -877,21 +895,48 @@ class JsNode {
 
     /**
      * Devuelve un número entero aleatorio entre dos valores.
-     * @param {number} min valor mínimo incluido.
-     * @param {number} max valor máximo incluido.
+     * @param {number|string} min valor mínimo incluido.
+     * @param {number|string} max valor máximo incluido.
      * @returns {number}
      */
     static randInt(min, max) {
-        return Math.floor((max - min + 1) * Math.random() + min);
+        return Math.floor((max - min + 1) * Math.random() + 1  *min);
     }
 
     /**
      * Devuelve un número decimal aleatorio entre dos valores.
-     * @param {number} min valor mínimo incluido.
-     * @param {number} max valor máximo incluido.
+     * @param {number|string} min valor mínimo incluido.
+     * @param {number|string} max valor máximo incluido.
      */
     static randDec(min, max) {
-        return (max - min) * Math.random() + min;
+        return (max - min) * Math.random() + 1 * min;
+    }
+
+    /**
+     * Redondea un número al número de decimales especificado.
+     * Nota: El método .toFixed(decimalDigits) también redondea, pero
+     * devuelve una cadena y el redondeo no se comporta predeciblemente
+     * cuando la cifra siguiente a la de redondeo es la última con valor 5:    
+     * 
+     * (1.835).toFixed(2) => '1.83' 
+     *      
+     * (1.875).toFixed(2) => '1.88' 
+     * 
+     * @param {number|string} x Número o cadena representando un número.
+     * @param {number} decimalDigits Número entero de cifras decimales deseadas.
+     * Por defecto es 0. Para los casos anteriores:
+     * 
+     * JsNode.round(1.835, 2) => 1.84
+     * 
+     * JsNode.round(1.875, 2) => 1.88
+     * 
+     * @returns {number} El número redondeado a los decimales especificados.
+     */
+    static round(x, decimalDigits = 0) {
+        // Factor para multiplicar/dividir
+        const y = Math.pow(10.0, decimalDigits);
+
+        return Math.round(x * y) / y;
     }
 
     /**

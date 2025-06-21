@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .fb-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        input {
+            max-width: 5rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        // Vamos a usar $ como sustituto de <JsNode.select> y $$ de JsNode
+        JsNode.use$().domLoaded().then(() => {
+            $('#randInt').on('click', () => {
+                // La función de utilidad randInt(min, max) nos permite
+                // obtener un entero aleatorio en el rango [min, max]
+                $('#randIntOut').val(
+                    $$.randInt($('#minInt').val(), $('#maxInt').val())
+                );                
+            });
+
+            $('#randDec').on('click', () => {
+                // La función de utilidad randDec(min, max) nos permite
+                // obtener un decimal aleatorio en el rango [min, max]
+                $('#randDecOut').val(
+                    $$.round($$.randDec($('#minDec').val(), $('#maxDec').val()), 5)
+                );                
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="fb-row">
+        <label>
+            Entero mínimo
+            <input type="number" id="minInt" value="1">
+        </label>
+        <label>
+            Entero máximo
+            <input type="number" id="maxInt" value="10">
+        </label>
+        <button id="randInt">Calcular</button>
+        <input type="text" id="randIntOut">
+    </div>
+    <hr>
+    <div class="fb-row">
+        <label>
+            Decimal mínimo
+            <input type="number" id="minDec" value="1.5">
+        </label>
+        <label>
+            Decimal máximo
+            <input type="number" id="maxDec" value="2.0">
+        </label>
+        <button id="randDec">Calcular</button>
+        <input type="text" id="randDecOut">
+    </div>
+</body>
+
+</html>
