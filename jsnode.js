@@ -58,6 +58,18 @@ class JsNode {
         }
     }
 
+    static #removeData(node) {
+        if (node.cssNode) {
+            delete node.cssNode;
+        }
+        if (node.cssComputed) {
+            delete node.cssComputed;
+        }
+        if (node.isAnimating) {
+            delete node.isAnimating;
+        }
+    }
+
     static #setAttr(node, name, value) {
         if (value === null) {
             node.removeAttribute(name);
@@ -116,7 +128,6 @@ class JsNode {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-
     static #getCssComputed(node) {
         const { display, width, height, opacity, overflow } = getComputedStyle(node);
 
@@ -128,6 +139,51 @@ class JsNode {
 
         return { display, width, height, opacity, overflow };
     }    
+    
+    static async #showAnimateNode(node, ms, effect) {                
+        const msPart = ms / JsNode.#fpa; // Milisegundos por animación
+        // Obtiene los estilos computados guardados antes de ocultar
+        const cs = node.cssComputed ?? JsNode.#getCssComputed(node);
+        
+        let width = (effect === 'all' || effect === 'width' ? 0 : parseFloat(cs.width));
+        let height = (effect === 'all' || effect === 'height' ? 0 : parseFloat(cs.height));
+        let opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
+        let widthPart = parseFloat(cs.width) / JsNode.#fpa;
+        let heightPart = parseFloat(cs.height) / JsNode.#fpa;
+        let opacityPart = cs.opacity / JsNode.#fpa;
+        
+        // Estilos de animación a los valores iniciales
+        node.style.width = width + 'px';
+        node.style.height = height + 'px';
+        node.style.opacity = opacity;        
+        node.style.display = (cs.display !== 'none' ? cs.display : 'block');
+        // Para impedir que el texto salga de la caja
+        node.style.overflow = 'hidden';
+        
+        while (ms > 0) {
+            if (effect === 'all' || effect === 'width') {
+                width += widthPart;
+                node.style.width = width + 'px';
+            }
+
+            if (effect === 'all' || effect === 'height') {
+                height += heightPart;
+                node.style.height = height + 'px';
+            }
+            
+            if (effect === 'all' || effect === 'opacity') {
+                opacity += opacityPart;
+                node.style.opacity = opacity;
+            }            
+
+            await JsNode.#sleep(msPart);
+
+            ms -= msPart;
+        }        
+
+        // Restaura el css original del elemento
+        Object.assign(node.style, node.cssNode ?? {});        
+    }
 
     static async #hideAnimateNode(node, ms, effect) {        
         const msPart = ms / JsNode.#fpa; // Milisegundos por animación
@@ -165,51 +221,6 @@ class JsNode {
 
         // Finalmente se oculta el elemento
         node.style.display = 'none';        
-    }
-
-    static async #showAnimateNode(node, ms, effect) {                
-        const msPart = ms / JsNode.#fpa; // Milisegundos por animación
-        // Obtiene los estilos computados guardados antes de ocultar
-        const cs = node.cssComputed ?? JsNode.#getCssComputed(node);
-        
-        let width = (effect === 'all' || effect === 'width' ? 0 : cs.width);
-        let height = (effect === 'all' || effect === 'height' ? 0 : cs.height);
-        let opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
-        let widthPart = parseFloat(cs.width) / JsNode.#fpa;
-        let heightPart = parseFloat(cs.height) / JsNode.#fpa;
-        let opacityPart = cs.opacity / JsNode.#fpa;
-        
-        // Estilos de animación a los valores iniciales
-        node.style.display = cs.display;
-        node.style.width = width + 'px';
-        node.style.height = height + 'px';
-        node.style.opacity = opacity;        
-        // Para impedir que el texto salga de la caja
-        node.style.overflow = 'hidden';
-        
-        while (ms > 0) {
-            if (effect === 'all' || effect === 'width') {
-                width += widthPart;
-                node.style.width = width + 'px';
-            }
-
-            if (effect === 'all' || effect === 'height') {
-                height += heightPart;
-                node.style.height = height + 'px';
-            }
-            
-            if (effect === 'all' || effect === 'opacity') {
-                opacity += opacityPart;
-                node.style.opacity = opacity;
-            }            
-
-            await JsNode.#sleep(msPart);
-
-            ms -= msPart;
-        }        
-
-        // Restaura el css original del elemento
-        Object.assign(node.style, node.cssNode ?? {});        
     }
 
     /**
@@ -1893,7 +1904,7 @@ class JsNode {
             this.#nodes.forEach((node, index) => {
                 if (!this.visible(index)) {                    
                     // Restaura los valores previos a ocultarse (si los hay)
-                    Object.assign(node.style, node.cssNode ?? {});
+                    Object.assign(node.style, node.cssNode ?? { display: 'block'});
                 }
             });
 
@@ -2075,7 +2086,7 @@ class JsNode {
                     node.style.display = 'none';
                 } else {
                     // Restaura los valores previos a ocultarse (si los hay)
-                    Object.assign(node.style, node.cssNode ?? {})                
+                    Object.assign(node.style, node.cssNode ?? { display: 'block'});
                 }
             });
 
@@ -2119,12 +2130,7 @@ class JsNode {
         while (this.#nodes.length) {
             const node = this.#nodes.at(-1);
             JsNode.#removeAllListeners(node);
-            if (node.cssNode) {
-                delete node.cssNode;
-            }
-            if (node.cssComputed) {
-                delete node.cssComputed;
-            }
+            JsNode.#removeData(node);            
             node.remove();
             this.#nodes.pop();
         }

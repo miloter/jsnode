@@ -50,9 +50,8 @@
                 // viene dado en milisegundos para dar una animación mientras se
                 // oculta, sin esperar a ocultar y con un efecto de reducción de
                 // la opacidad
-                JsNode.select('.flexbox-row').hide(2000, 0, 'opacity').then(() => {
-                    JsNode.select('.flexbox-column').hide(2000, 0, 'opacity');
-                });
+                JsNode.select('.flexbox-row').hide(2000, 0, 'opacity');            
+                JsNode.select('.flexbox-column').hide(2000, 0, 'opacity');
             });    
 
             JsNode.select('.show').on('click', () => {
@@ -61,9 +60,8 @@
                 // duration viene dado en milisegundos para dar una animación
                 // mientras se muestra, no esperamos y con un efecto de aumento
                 // de la opacidad
-                JsNode.select('.flexbox-row').show(2000, 0, 'opacity').then(() => {                    
-                    JsNode.select('.flexbox-column').show(2000, 0, 'opacity');
-                });
+                JsNode.select('.flexbox-row').show(2000, 0, 'opacity');            
+                JsNode.select('.flexbox-column').show(2000, 0, 'opacity');
             });    
             
             JsNode.select('.toggle').on('click', () => {
@@ -73,7 +71,8 @@
                 // duration viene dado en milisegundos para dar una animación
                 // mientras se muestra u oculta, no esperamos y con un efecto
                 // de aumento de la opacidad
-                JsNode.select('.flexbox-row, .flexbox-column').toggle(2000, 0, 'opacity');                
+                JsNode.select('.flexbox-row').toggle(2000, 0, 'opacity');
+                JsNode.select('.flexbox-column').toggle(2000, 0, 'opacity');                
             });                            
         });
     </script>
