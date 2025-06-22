@@ -143,17 +143,17 @@ class JsNode {
         // Para impedir que el texto salga de la caja
         node.style.overflow = 'hidden';
         while (ms > 0) {
-            if (effect === 'hide' || effect === 'width') {
+            if (effect === 'all' || effect === 'width') {
                 width -= widthPart;
                 node.style.width = width + 'px';
             }
 
-            if (effect === 'hide' || effect === 'height') {
+            if (effect === 'all' || effect === 'height') {
                 height -= heightPart;
                 node.style.height = height + 'px';
             }
             
-            if (effect === 'hide' || effect === 'opacity') {
+            if (effect === 'all' || effect === 'opacity') {
                 opacity -= opacityPart;
                 node.style.opacity = opacity;
             }
@@ -1916,7 +1916,7 @@ class JsNode {
      * comenzar la animación.
      * @param {string} effect Tipo de efecto deseado:
      * 
-     * 'hide': Efecto por defecto, se disminuyen anchura, altura y opacidad.
+     * 'all': Efecto por defecto, se disminuyen anchura, altura y opacidad.
      * 
      * 'width': Se disminuye solo la anchura.
      * 
@@ -1926,7 +1926,7 @@ class JsNode {
      *     
      * @returns {JsNode|Promise<JsNode, boolean>}
      */
-    hide(duration = undefined, delay = undefined, effect = 'hide') {
+    hide(duration = undefined, delay = undefined, effect = 'all') {
         if (duration !== undefined) {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
