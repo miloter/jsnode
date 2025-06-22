@@ -8,14 +8,23 @@ var $, $$;
  * @copyright miloter
  * @license MIT
  * @since 2025-06-06 
- * @version 0.4.0 2025-06-20
+ * @version 0.5.0 2025-06-22
  */
 class JsNode {
+    // Constantes de utilidad
     static #dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     static #dayNames3L = JsNode.#dayNames.map(d => d.substring(0, 3));
     static #monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     static #monthNames3L = JsNode.#monthNames.map(m => m.substring(0, 3));
-    #nodes;
+    
+    // Fotogramas por animación: La duración se divide en fpa partes animadas
+    static #fpa = 60;
+
+    // Cola de animaciones
+    static #queue = [];
+
+    // Nodos DOM de la instancia actual
+    #nodes;        
 
     /**
      * Crea un nuevo JsNode.         
@@ -25,14 +34,14 @@ class JsNode {
         if (!(nodes instanceof Array)) {
             nodes = [nodes];
         }
-        this.#nodes = nodes;
+        this.#nodes = nodes;        
     }
 
     static #removeListeners(node, eventName) {
         if (!node.listeners) return;
 
         const listeners = node.listeners[eventName];
-        
+
         if (!listeners) return;
 
         for (const listener of listeners) {
@@ -42,11 +51,11 @@ class JsNode {
     }
 
     static #removeAllListeners(node) {
-        if (!node.listeners) return;        
+        if (!node.listeners) return;
 
         for (const eventName in node.listeners) {
             JsNode.#removeListeners(node, eventName);
-        }                
+        }
     }
 
     static #setAttr(node, name, value) {
@@ -55,7 +64,7 @@ class JsNode {
         } else {
             node.setAttribute(name, value)
         }
-    }
+    }    
 
     static async #buildResponse(r, contentType) {
         const resp = {};
@@ -80,7 +89,7 @@ class JsNode {
             body = JSON.stringify(bodyObject);
         } else {
             headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-            body = this.objectToUrlEncoded(bodyObject);
+            body = JsNode.objectToUrlEncoded(bodyObject);
         }
 
         return fetch(url, {
@@ -93,7 +102,7 @@ class JsNode {
 
     static async #getOrDelete(url, method, params, contentType) {
         contentType = contentType.toLowerCase();
-        params = this.objectToUrlEncoded(params);
+        params = JsNode.objectToUrlEncoded(params);
         if (params) {
             url += '?' + params
         }
@@ -103,6 +112,120 @@ class JsNode {
         }).then(r => JsNode.#buildResponse(r, contentType));
     }
 
+    static #sleep(ms = 1) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+
+    static #getCssComputed(node) {
+        const { display, width, height, opacity, overflow } = getComputedStyle(node);
+
+        return { display, width, height, opacity, overflow };
+    }    
+
+    static #getCssNode(node) {
+        const { display, width, height, opacity, overflow } = node.style;
+
+        return { display, width, height, opacity, overflow };
+    }    
+
+    static async #hideAnimateNode(node, ms, effect) {        
+        const msPart = ms / JsNode.#fpa; // Milisegundos por animación
+        const cs = node.cssComputed;
+
+        let width = parseFloat(cs.width);
+        let height = parseFloat(cs.height);
+        let opacity = cs.opacity;
+        let widthPart = width / JsNode.#fpa;
+        let heightPart = height / JsNode.#fpa;
+        let opacityPart = opacity / JsNode.#fpa;
+                
+        // Para impedir que el texto salga de la caja
+        node.style.overflow = 'hidden';
+        while (ms > 0) {
+            if (effect === 'hide' || effect === 'width') {
+                width -= widthPart;
+                node.style.width = width + 'px';
+            }
+
+            if (effect === 'hide' || effect === 'height') {
+                height -= heightPart;
+                node.style.height = height + 'px';
+            }
+            
+            if (effect === 'hide' || effect === 'opacity') {
+                opacity -= opacityPart;
+                node.style.opacity = opacity;
+            }
+            
+            await JsNode.#sleep(msPart);
+
+            ms -= msPart;
+        }                
+
+        // Finalmente se oculta el elemento
+        node.style.display = 'none';        
+    }
+
+    static async #showAnimateNode(node, ms, effect) {                
+        const msPart = ms / JsNode.#fpa; // Milisegundos por animación
+        // Obtiene los estilos computados guardados antes de ocultar
+        const cs = node.cssComputed ?? JsNode.#getCssComputed(node);
+        
+        let width = (effect === 'all' || effect === 'width' ? 0 : cs.width);
+        let height = (effect === 'all' || effect === 'height' ? 0 : cs.height);
+        let opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
+        let widthPart = parseFloat(cs.width) / JsNode.#fpa;
+        let heightPart = parseFloat(cs.height) / JsNode.#fpa;
+        let opacityPart = cs.opacity / JsNode.#fpa;
+        
+        // Estilos de animación a los valores iniciales
+        node.style.display = cs.display;
+        node.style.width = width + 'px';
+        node.style.height = height + 'px';
+        node.style.opacity = opacity;        
+        // Para impedir que el texto salga de la caja
+        node.style.overflow = 'hidden';
+        
+        while (ms > 0) {
+            if (effect === 'all' || effect === 'width') {
+                width += widthPart;
+                node.style.width = width + 'px';
+            }
+
+            if (effect === 'all' || effect === 'height') {
+                height += heightPart;
+                node.style.height = height + 'px';
+            }
+            
+            if (effect === 'all' || effect === 'opacity') {
+                opacity += opacityPart;
+                node.style.opacity = opacity;
+            }            
+
+            await JsNode.#sleep(msPart);
+
+            ms -= msPart;
+        }        
+
+        // Restaura el css original del elemento
+        Object.assign(node.style, node.cssNode ?? {});        
+    }
+
+    /**
+     * Permite envolver llamadas a funciones que se pueden almacenar en un array o cola.
+     * @param {Function} fn La función a envolver.
+     * @param {object} context El objeto this dentro de la función llamada.
+     * @param {array} params Un array de argumentos para pasar a la función envuelta.
+     * @returns {Function} Una función contenedora sin argumentos que llamará gracias
+     * a la clausura a la función contenida con los argumentos correctos.
+     */
+    static #wrapFunction(fn, context, params) {
+        return function() {
+            fn.apply(context, params);
+        }
+    }
+
     /**
      * Este método permite usar $ como sustituto de <JsNode.select>.
      * @returns {JsNode} Una referencia a la clase.
@@ -110,10 +233,10 @@ class JsNode {
     static use$() {
         if ($) {
             console.warn('$ ya estaba definido. Se sobrescribe con <JsNode.select>');
-        }        
+        }
         $ = JsNode.select;
         $$ = JsNode;
-        
+
         return JsNode;
     }
 
@@ -280,7 +403,7 @@ class JsNode {
     static dateParts(date = undefined) {
         // Expresión regular para extraer los componentes
         const RE_DATE = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d).(\d{3})Z$/;
-        const datePartsNames = ['year', 'mon', 'mday', 'hours', 'minutes', 'seconds', 'milliseconds'];        
+        const datePartsNames = ['year', 'mon', 'mday', 'hours', 'minutes', 'seconds', 'milliseconds'];
         const parts = {};
 
         // Para evitar efectos secundarios
@@ -321,7 +444,7 @@ class JsNode {
         parts.offset = date.getTimezoneOffset();
 
         return parts;
-    }    
+    }
 
     /**
      * Da formato de cadena a una fecha a partir de una cadena de formato:
@@ -357,7 +480,7 @@ class JsNode {
      * @returns {string}
      */
     static dateFormat(format = 'd/m/Y H:i:s:u', date = undefined) {
-        const parts = this.dateParts(date);
+        const parts = JsNode.dateParts(date);
 
         const out = [];
 
@@ -498,7 +621,7 @@ class JsNode {
      * @returns {Date|NaN} Una fecha JavaScript si la conversión es correcta o
      * NaN si no se puede convertir.
      */
-    static dateParse(format = 'd/m/Y', date = '01/01/1970') {        
+    static dateParse(format = 'd/m/Y', date = '01/01/1970') {
         // Patrón de expresión regular que se irá formando
         const pattern = ['^'];
         // Contendrá los caracteres de formato en orden de grupo de captura.
@@ -544,7 +667,7 @@ class JsNode {
                     break;
                 case 'Y': // Año con 4 cifras
                     pattern.push('(\\d{4})');
-                    charsGroup.push(ch);                    
+                    charsGroup.push(ch);
                     break;
                 case 'Z': // Diferencia en minutos entre UTC y la hora local: UTC - Local
                     pattern.push('(-?\\d{1,3})');
@@ -604,9 +727,9 @@ class JsNode {
                 default:
                     // Si es un metacarácter de expresión regular lo escapa
                     const isMeta = ['^', '$', '|', '.', '?', '*', '+',
-                        '(', ')', '[', ']', '{', '}'                        
+                        '(', ')', '[', ']', '{', '}'
                     ].includes(ch);
-                    pattern.push((isMeta ? '\\' : '') + ch);                    
+                    pattern.push((isMeta ? '\\' : '') + ch);
             }
         }
         pattern.push('$');
@@ -615,7 +738,7 @@ class JsNode {
         const mapFormat = {};
         if (res) {
             // Mapea los valores en variables de formato
-            for(let i = 0; i < charsGroup.length; i++) {
+            for (let i = 0; i < charsGroup.length; i++) {
                 mapFormat[charsGroup[i]] = res[i + 1];
             }
             // La fecha solo se puede construir si existe al menos el Año
@@ -655,17 +778,17 @@ class JsNode {
             if (mapFormat.u) {
                 milliseconds = mapFormat.u;
             }
-            
+
             if (year !== undefined) {
                 return new Date(year, month, day, hours, minutes, seconds, milliseconds);
             } else if (mapFormat.U) {
                 return new Date(parseInt(mapFormat.U));
             } else {
                 return NaN;
-            }            
+            }
         } else {
             return NaN;
-        }        
+        }
     }
 
     /**
@@ -873,7 +996,7 @@ class JsNode {
                 reject(error);
             }
         });
-    }    
+    }
 
     /**
      * Devuelve true si su argumento es un número.
@@ -900,7 +1023,7 @@ class JsNode {
      * @returns {number}
      */
     static randInt(min, max) {
-        return Math.floor((max - min + 1) * Math.random() + 1  *min);
+        return Math.floor((max - min + 1) * Math.random() + 1 * min);
     }
 
     /**
@@ -990,7 +1113,7 @@ class JsNode {
             }
         }
 
-        return ''; // Si no hay cookies, o no existe
+        return undefined; // Si no hay cookies, o no existe
     }
 
     /**
@@ -1053,14 +1176,14 @@ class JsNode {
                         node.style[key] = name[key];
                     }
                 });
-                
+
                 return this;
             } else if (name === undefined) {
                 this.#nodes.forEach(node => {
                     // Las propiedades establecidas tienen clave numérica
                     while (node.style[0]) {
                         node.style[node.style[0]] = '';
-                    }                    
+                    }
                 });
 
                 return this;
@@ -1181,17 +1304,17 @@ class JsNode {
      * @returns {JsNode} Un objeto JsNode con el resultado del filtrado.
      */
     filter(selector) {
-        this.#nodes = this.#nodes.filter((node, index) => {            
+        this.#nodes = this.#nodes.filter((node, index) => {
             let res;
 
-            if (typeof(selector) === 'function') {
+            if (typeof (selector) === 'function') {
                 res = !!selector.call(new JsNode(node), index);
             } else {
                 res = node.matches(selector);
             }
             return res
         });
-        
+
         return this;
     }
 
@@ -1204,9 +1327,9 @@ class JsNode {
      * Si se omite se selecciona desde start hasta el final de la selección.
      * @returns {JsNode} Un objeto JsNode con la nueva selección.
      */
-    slice(start = 0, end = undefined) {        
+    slice(start = 0, end = undefined) {
         this.#nodes = this.#nodes.slice(start, end);
-        
+
         return this;
     }
 
@@ -1253,7 +1376,7 @@ class JsNode {
     html(newHtml = undefined) {
         if (newHtml === undefined) {
             return this.#nodes[0]?.innerHTML;
-        } else {            
+        } else {
             this.empty();
             this.#nodes.forEach((node, index) => {
                 if (typeof (newHtml) !== 'function') {
@@ -1466,7 +1589,7 @@ class JsNode {
             while (item && (until === undefined || !item.matches(until))) {
                 if (!items.includes(item) &&
                     (selector === undefined || item.matches(selector))) {
-                    items.push(item);                    
+                    items.push(item);
                 }
                 item = item.parentElement;
             }
@@ -1694,42 +1817,273 @@ class JsNode {
         });
 
         return this;
-    }
-
-    /**
-     * Oculta la selección.
-     * @returns {JsNode}
-     */
-    hide() {
-        for (const node of this.#nodes) {
-            node.style.display = 'none';
-        }
-
-        return this;
-    }
-
-    /**
-     * Muestra la selección.
-     * @returns {JsNode}
-     */
-    show() {
-        for (const node of this.#nodes) {
-            node.style.display = '';
-        }
-
-        return this;
     }    
+    
+    /**
+     * Muestra la selección con la posibilidad de una animación.
+     * @param {number} duration Tiempo en milisegundos de duración de la
+     * animación, antes de mostrar la selección. Si se suministra, la
+     * función devuelve una promesa cumplida con un objeto conteniendo una
+     * referencia a la selección y si se ha completado o no la animación. Si
+     * la animación no se ha completado es porque se ha puesto en cola y se
+     * completará más adelante.
+     * @param {number} delay Tiempo en milegundos de retraso antes de
+     * comenzar la animación.
+     * @param {string} effect Tipo de efecto deseado:
+     * 
+     * 'all': Efecto por defecto, se aumentan anchura, altura y opacidad.
+     * 
+     * 'width': Se aumenta solo la anchura.
+     * 
+     * 'height': Se aumenta solo la altura.
+     * 
+     * 'opacity': Se aumenta solo la opacidad.     
+     * 
+     * @returns {JsNode|Promise<JsNode, boolean>}
+     */
+    show(duration = undefined, delay = 0, effect = 'all') {
+        if (duration !== undefined) {            
+            // Si hay nodos animándose, la llamada se almacena en la cola para después
+            if (this.#nodes.some(n => n.isAnimating)) {
+                JsNode.#queue.push(JsNode.#wrapFunction(this.show, this, [duration, delay, effect]));
+
+                // Se resuelve pero sin completar
+                return Promise.resolve({ self: this, completed: false });
+            }
+
+            effect = effect.toLowerCase();
+            return new Promise(async resolve => {                
+                // Prepara los nodos que se tiene que animar
+                this.#nodes.forEach((node, index) => {                
+                    // Solo si no está visible se muestra
+                    if (!this.visible(index)) {
+                        node.isAnimating = true;
+                    }
+                });
+
+                // Comprueba si debe aplicar un retraso
+                if (delay !== undefined) {
+                    await JsNode.#sleep(delay);
+                }                
+
+                const promises = [];
+                this.#nodes.forEach((node, index) => {                
+                    // Solo si no está visible se muestra
+                    if (!this.visible(index)) {                        
+                        promises.push(JsNode.#showAnimateNode(node, duration, effect));
+                    }
+                });
+                Promise.all(promises).then(() => {
+                    // Borra indicadores de animación
+                    this.#nodes.forEach(node => delete node.isAnimating);
+
+                    // Si hay llamadas en cola, llama a la primera
+                    if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+                    
+                    resolve({ self: this, completed: true });
+                });                
+            });
+        } else {
+            // Si hay nodos animándose, la llamada se almacena en la cola para después
+            if (this.#nodes.some(n => n.isAnimating)) {
+                JsNode.#queue.push(JsNode.#wrapFunction(this.show, this, [duration, delay, effect]));                
+                return this;
+            }
+
+            this.#nodes.forEach((node, index) => {
+                if (!this.visible(index)) {                    
+                    // Restaura los valores previos a ocultarse (si los hay)
+                    Object.assign(node.style, node.cssNode ?? {});
+                }
+            });
+
+            // Si hay llamadas en cola, llama a la primera
+            if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());            
+
+            return this;
+        }
+    }
 
     /**
-     * Alterna entre mostrar y ocultar la selección.
-     * @returns {JsNode}
+     * Oculta la selección con la posibilidad de una animación.
+     * @param {number} duration Tiempo en milisegundos de duración de la
+     * animación, antes de ocultar la selección. Si se suministra, la
+     * función devuelve una promesa cumplida con un objeto conteniendo una
+     * referencia a la selección y si se ha completado o no la animación. Si
+     * la animación no se ha completado es porque se ha puesto en cola y se
+     * completará más adelante.
+     * @param {number} delay Tiempo en milegundos de retraso antes de
+     * comenzar la animación.
+     * @param {string} effect Tipo de efecto deseado:
+     * 
+     * 'hide': Efecto por defecto, se disminuyen anchura, altura y opacidad.
+     * 
+     * 'width': Se disminuye solo la anchura.
+     * 
+     * 'height': Se disminuye solo la altura.
+     * 
+     * 'opacity': Se disminuye solo la opacidad.
+     *     
+     * @returns {JsNode|Promise<JsNode, boolean>}
      */
-    toggle() {
-        for (const node of this.#nodes) {
-            node.style.display = (node.style.display === '' ? 'none' : '');
-        }
+    hide(duration = undefined, delay = undefined, effect = 'hide') {
+        if (duration !== undefined) {
+            // Si hay nodos animándose, la llamada se almacena en la cola para después
+            if (this.#nodes.some(n => n.isAnimating)) {
+                JsNode.#queue.push(JsNode.#wrapFunction(this.hide, this, [duration, delay, effect]));
 
-        return this;
+                // Se resuelve pero sin completar
+                return Promise.resolve({ self: this, completed: false });
+            }
+            effect = effect.toLowerCase();
+            return new Promise(async resolve => {
+                // Prepara los nodos que se tiene que animar
+                this.#nodes.forEach((node, index) => {                
+                    // Solo si está visible se oculta
+                    if (this.visible(index)) {
+                        node.isAnimating = true;
+                    }
+                });
+
+                // Comprueba si debe aplicar un retraso
+                if (delay !== undefined) {
+                    await JsNode.#sleep(delay);
+                }                       
+
+                const promises = [];
+                this.#nodes.forEach((node, index) => {                
+                    // Solo si esta visible se oculta
+                    if (this.visible(index)) {
+                        // Guarda antes los estilos CSS necesarios para animaciones
+                        node.cssNode = JsNode.#getCssNode(node);
+                        node.cssComputed = JsNode.#getCssComputed(node);
+                        promises.push(JsNode.#hideAnimateNode(node, duration, effect));
+                    }
+                });
+                Promise.all(promises).then(() => {
+                    // Borra indicadores de animación
+                    this.#nodes.forEach(node => delete node.isAnimating);
+
+                    // Si hay llamadas en cola, llama a la primera
+                    if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+                    resolve({ self: this, completed: true });
+                });
+            });
+        } else {
+            // Si hay nodos animándose, la llamada se almacena en la cola para después
+            if (this.#nodes.some(n => n.isAnimating)) {
+                JsNode.#queue.push(JsNode.#wrapFunction(this.hide, this, [duration, delay, effect]));
+                
+                return this;
+            }
+
+            this.#nodes.forEach((node, index) => {
+                if (this.visible(index)) {
+                    // Guarda antes los estilos CSS necesarios para animaciones
+                    node.cssNode = JsNode.#getCssNode(node);
+                    node.cssComputed = JsNode.#getCssComputed(node);
+                    node.style.display = 'none';
+                }
+            });
+
+            // Si hay llamadas en cola, llama a la primera
+            if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+            return this;
+        }        
+    }
+
+    /**
+     * Muestra u oculta la selección con la posibilidad de una animación.
+     * @param {number} duration Tiempo en milisegundos de duración de la
+     * animación, antes de mostrar/ocultar la selección. Si se suministra, la
+     * función devuelve una promesa cumplida con un objeto conteniendo una
+     * referencia a la selección y si se ha completado o no la animación. Si
+     * la animación no se ha completado es porque se ha puesto en cola y se
+     * completará más adelante.
+     * @param {number} delay Tiempo en milegundos de retraso antes de
+     * comenzar la animación.
+     * @param {string} effect Tipo de efecto deseado:
+     * 
+     * 'all': Efecto por defecto, se aumentan/disminuyen anchura, altura y opacidad.
+     * 
+     * 'width': Se aumenta/disminuye solo la anchura.
+     * 
+     * 'height': Se aumenta/disminuye solo la altura.
+     * 
+     * 'opacity': Se aumenta/disminuye solo la opacidad.     
+     * 
+     * @returns {JsNode|Promise<JsNode, boolean>}
+     */
+    toggle(duration = undefined, delay = 0, effect = 'all') {
+        if (duration !== undefined) {
+            // Si hay nodos animándose, la llamada se almacena en la cola para después
+            if (this.#nodes.some(n => n.isAnimating)) {
+                JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect]));
+
+                // Se resuelve pero sin completar
+                return Promise.resolve({ self: this, completed: false });
+            }
+
+            effect = effect.toLowerCase();
+            return new Promise(async resolve => {
+                // Prepara los nodos que se tiene que animar
+                this.#nodes.forEach(node => {                                                        
+                    node.isAnimating = true;                    
+                });
+
+                // Comprueba si debe aplicar un retraso
+                if (delay !== undefined) {
+                    await JsNode.#sleep(delay);
+                }                
+
+                const promises = [];
+                this.#nodes.forEach((node, index) => {                    
+                    if (this.visible(index)) {
+                        // Guarda antes los estilos CSS necesarios para animaciones
+                        node.cssNode = JsNode.#getCssNode(node);
+                        node.cssComputed = JsNode.#getCssComputed(node);
+                        promises.push(JsNode.#hideAnimateNode(node, duration, effect));
+                    } else {
+                        promises.push(JsNode.#showAnimateNode(node, duration, effect));
+                    }
+                });
+                Promise.all(promises).then(() => {
+                    // Borra indicadores de animación
+                    this.#nodes.forEach(node => delete node.isAnimating);
+
+                    // Si hay llamadas en cola, llama a la primera
+                    if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+                    resolve({ self: this, completed: true });
+                });                
+            });
+        } else {
+            // Si hay nodos animándose, la llamada se almacena en la cola para después
+            if (this.#nodes.some(n => n.isAnimating)) {
+                JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect]));
+                
+                return this;
+            }
+
+            this.#nodes.forEach((node, index) => {
+                if (this.visible(index)) {
+                    // Guarda antes los estilos CSS necesarios para animaciones
+                    node.cssNode = JsNode.#getCssNode(node);
+                    node.cssComputed = JsNode.#getCssComputed(node);
+                    node.style.display = 'none';
+                } else {
+                    // Restaura los valores previos a ocultarse (si los hay)
+                    Object.assign(node.style, node.cssNode ?? {})                
+                }
+            });
+
+            // Si hay llamadas en cola, llama a la primera
+            if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+            return this;
+        }                
     }
 
     /**
@@ -1765,6 +2119,12 @@ class JsNode {
         while (this.#nodes.length) {
             const node = this.#nodes.at(-1);
             JsNode.#removeAllListeners(node);
+            if (node.cssNode) {
+                delete node.cssNode;
+            }
+            if (node.cssComputed) {
+                delete node.cssComputed;
+            }
             node.remove();
             this.#nodes.pop();
         }
@@ -1794,7 +2154,7 @@ class JsNode {
             } else {
                 node.remove();
                 this.#nodes.splice(i, 1);
-            }    
+            }
         }
 
 
@@ -1808,7 +2168,7 @@ class JsNode {
      */
     one(index = 0) {
         return new JsNode(this.#nodes.at(index));
-    }    
+    }
 
     /**
      * Agrega un nuevo controlador de eventos a los elementos actualmente seleccionados.
@@ -1844,7 +2204,7 @@ class JsNode {
             if (eventName) {
                 JsNode.#removeListeners(node, eventName);
             } else {
-                JsNode.#removeAllListeners(node);                
+                JsNode.#removeAllListeners(node);
             }
         }
 

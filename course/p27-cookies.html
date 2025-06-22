@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .fb-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .fb-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .no-gap {
+            gap: 0;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        // Vamos a usar $ como sustituto de <JsNode.select> y $$ de JsNode
+        JsNode.use$().domLoaded().then(() => {
+            $('#msg').hide();
+
+            if (location.protocol === 'file:') {
+                console.warn('Las cookies solo funcionan en http o https');
+            }
+
+            $('#saveCookie').on('click', () => {
+                const name = $('#cookieName').val();
+                const value = $('#cookieValue').val();
+
+                $$.setCookie(name, value);
+                
+                $('#msg').show()
+                    .html('<p>Cookie Guardada</p>')
+                    .css({
+                        color: 'darkgreen',
+                        backgroundColor: 'yellow',
+                        padding: '0.5rem',
+                        border: '2px solid red'
+                    }).hide(600, 600, 'opacity').then(r => {
+                        console.log(r.self, r.completed);
+                    });                
+            });
+
+            $('#loadCookie').on('click', () => {
+                const name = $('#cookieName').val();
+                const value = $$.getCookie(name);
+
+                $('#cookieValue').val(value);
+                $('#msg').show().html(`
+                    <p>${value !== undefined ?
+                        'Cookie recuperada' :
+                        'No existe la cookie'}
+                    </p>`
+                ).css({
+                    color: 'darkgreen',
+                    backgroundColor: 'cyan',
+                    padding: '0.5rem',
+                    border: '2px solid red'
+                }).hide(600, 600, 'opacity').then(r => {
+                    console.log(r.self, r.completed);
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="fb-column">
+        <label>
+            Nombre Cookie
+            <select id="cookieName">
+                <option value="COOKIE1">COOKIE1</option>
+                <option value="COOKIE2">COOKIE2</option>
+                <option value="COOKIE3">COOKIE3</option>
+                <option value="COOKIE4">COOKIE4</option>
+            </select>
+        </label>
+        <label class="fb-column no-gap">
+            Valor de la cookie
+            <textarea id="cookieValue" rows="4" cols="80"></textarea>
+        </label>
+        <div class="fb-row">
+            <button id="saveCookie">Guardar</button>
+            <button id="loadCookie">Recuperar</button>
+        </div>
+        <div id="msg"></div>
+    </div>
+</body>
+
+</html>

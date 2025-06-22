@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .fb-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .no-gap {
+            gap: 0;
+        }
+
+        #inputsDefault {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        // Vamos a usar $ como sustituto de <JsNode.select> y $$ de JsNode
+        JsNode.use$().domLoaded().then(() => {
+            // URL del API RESTFUL
+            const url = $('#apiUrl').attr('href');
+
+            // Para datos de prueba
+            $('#inputsDefault').on('change', function () {
+                $('#input').val($(`#inputsDefault > option[value="${this.val()}"]`).text());
+            });
+
+            $('#send').on('click', () => {
+                // Selecciona el método
+                const method = $('#method').val();
+
+                // Preparamos los datos para enviar si procede
+                let input = $('#input').val();
+                if (input) {
+                    input = JSON.parse(input);
+                    // Una petición JSON vacía
+                } else {
+                    input = {};
+                }
+
+                // Construye la respuesta de los métodos HTTP
+                const buildResponse = r => {
+                    $('#out').val(
+                        r.response.status + (r.response.ok ? ' OK' : '') +
+                        (r.response.statusText ?
+                            ' ' + r.response.statusText :
+                            ''
+                        ) + '\n\n' + JSON.stringify(r.data, undefined, '\t')
+                    );
+                };
+
+                if (method === 'get') {                    
+                    $$.get(url + (input.id ?  '/' + input.id : ''), {}, 'json').then(buildResponse);
+                } else if (method === 'post') {
+                    $$.post(url, input, 'json').then(buildResponse);
+                } else if (method === 'put') {
+                    $$.put(`${url}/${input.id}`, { username: input.username }, 'json').then(buildResponse);                    
+                } else if (method === 'delete') {
+                    $$.delete(url + (input.id ?  '/' + input.id : ''), {}, 'json').then(buildResponse);
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="fb-column">
+        <p>
+            <b>API RESTFUL:</b>
+            <a id="apiUrl" href="https://jsonplaceholder.typicode.com/users" target="_blank">
+                https://jsonplaceholder.typicode.com/users
+            </a>
+        </p>
+        <label>
+            Método
+            <select id="method">
+                <option value="get">GET</option>
+                <option value="post">POST</option>
+                <option value="put">PUT</option>
+                <option value="delete">DELETE</option>
+            </select>
+        </label>
+        <label class="fb-column no-gap">
+            <span>
+                Datos envidados (use formato JSON)
+                <select id="inputsDefault">
+                    <option value="" selected disabled>-- Selecione datos de prueba --</option>
+                    <option value="getOrDelete1">{ "id": 1 }</option>
+                    <option value="getOrDelete5">{ "id": 5 }</option>
+                    <option value="post">{ "username": "miloter" }</option>
+                    <option value="put5">{ "id": 5, "username": "miloter" }</option>
+                </select>
+            </span>
+            <textarea id="input" rows="4" cols="80"></textarea>
+        </label>
+        <button id="send">Enviar</button>
+        <label class="fb-column no-gap">
+            Datos recibidos
+            <textarea id="out" rows="32" cols="80"></textarea>
+        </label>
+    </div>
+</body>
+
+</html>

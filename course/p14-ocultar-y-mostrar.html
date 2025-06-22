@@ -45,22 +45,35 @@
     <script>
         JsNode.domLoaded().then(() => {            
             JsNode.select('.hide').on('click', () => {
-                // Con el método .hide() ocultamos la selección                
-                JsNode.select('.flexbox-row').hide();
-                JsNode.select('.flexbox-column').hide();
+                // Con el método .hide() ocultamos la selección inmediatamente.
+                // Usamos la versión .hide(duration, delay, effect) donde duration
+                // viene dado en milisegundos para dar una animación mientras se
+                // oculta, sin esperar a ocultar y con un efecto de reducción de
+                // la opacidad
+                JsNode.select('.flexbox-row').hide(2000, 0, 'opacity').then(() => {
+                    JsNode.select('.flexbox-column').hide(2000, 0, 'opacity');
+                });
             });    
 
             JsNode.select('.show').on('click', () => {
-                // Con el método .show() mostramos la selección
-                JsNode.select('.flexbox-row').show();
-                JsNode.select('.flexbox-column').show();
+                // Con el método .show() mostramos la selección inmediatamente.
+                // Usamos la versión .show(duration, delay, effect) donde
+                // duration viene dado en milisegundos para dar una animación
+                // mientras se muestra, no esperamos y con un efecto de aumento
+                // de la opacidad
+                JsNode.select('.flexbox-row').show(2000, 0, 'opacity').then(() => {                    
+                    JsNode.select('.flexbox-column').show(2000, 0, 'opacity');
+                });
             });    
             
             JsNode.select('.toggle').on('click', () => {
                 // Con el método .toggle() alternamos entre mostar u ocultar
-                // la selección, si está oculta o visible respectivamente
-                JsNode.select('.flexbox-row').toggle();
-                JsNode.select('.flexbox-column').toggle();
+                // la selección, si está oculta o visible respectivamente.
+                // Usamos la versión .toggle(duration, delay, effect) donde
+                // duration viene dado en milisegundos para dar una animación
+                // mientras se muestra u oculta, no esperamos y con un efecto
+                // de aumento de la opacidad
+                JsNode.select('.flexbox-row, .flexbox-column').toggle(2000, 0, 'opacity');                
             });                            
         });
     </script>
