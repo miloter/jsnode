@@ -8,7 +8,7 @@ var $, $$;
  * @copyright miloter
  * @license MIT
  * @since 2025-06-06 
- * @version 0.5.0 2025-06-22
+ * @version 0.6.0 2025-06-23
  */
 class JsNode {
     // Constantes de utilidad
