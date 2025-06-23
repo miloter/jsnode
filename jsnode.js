@@ -17,12 +17,12 @@ class JsNode {
     static #monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     static #monthNames3L = JsNode.#monthNames.map(m => m.substring(0, 3));
     static #blockTagNames = ['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'CANVAS',
-            'DD', 'DIV', 'DL', 'DT', 'FIELDSET',
-            'FIGCAPTION', 'FIGURE', 'FOOTER', 'FORM', 'H1',
-            'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER',
-            'HR', 'LI', 'MAIN', 'NAV', 'NOSCRIPT',
-            'OL', 'P', 'PRE', 'SECTION', 'TABLE',
-            'TFOOT', 'UL', 'VIDEO'];
+        'DD', 'DIV', 'DL', 'DT', 'FIELDSET',
+        'FIGCAPTION', 'FIGURE', 'FOOTER', 'FORM', 'H1',
+        'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER',
+        'HR', 'LI', 'MAIN', 'NAV', 'NOSCRIPT',
+        'OL', 'P', 'PRE', 'SECTION', 'TABLE',
+        'TFOOT', 'UL', 'VIDEO'];
 
     // Fotogramas por animación: La duración se divide en fpa partes animadas
     static #fpa = 60;
@@ -70,7 +70,7 @@ class JsNode {
     static #removeData(node) {
         if (node.displayComputed) {
             delete node.displayComputed;
-        }        
+        }
     }
 
     static #setAttr(node, name, value) {
@@ -149,7 +149,7 @@ class JsNode {
         if (cs.display === 'inline') {
             effect = 'opacity';
         }
-        
+
         // Prepara variables de animación
         if (cs.display !== 'inline') {
             width = (effect === 'all' || effect === 'width' ? 0 : parseFloat(cs.width));
@@ -162,10 +162,10 @@ class JsNode {
         }
 
         opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
-        opacityPart = cs.opacity / JsNode.#fpa;        
+        opacityPart = cs.opacity / JsNode.#fpa;
         node.style.opacity = opacity;
         node.style.display = cs.display;
-        
+
         // Para impedir que el texto salga de la caja
         node.style.overflow = 'hidden';
 
@@ -206,18 +206,18 @@ class JsNode {
         if (cs.display === 'inline') {
             effect = 'opacity';
         }
-        
+
         // Prepara variables de animación
-        if (cs.display !== 'inline') {        
+        if (cs.display !== 'inline') {
             width = parseFloat(cs.width);
             height = parseFloat(cs.height);
             widthPart = width / JsNode.#fpa;
             heightPart = height / JsNode.#fpa;
         }
-        
+
         opacity = cs.opacity;
         opacityPart = opacity / JsNode.#fpa;
-        
+
         // Para impedir que el texto salga de la caja
         node.style.overflow = 'hidden';
 
@@ -247,7 +247,7 @@ class JsNode {
         // Restauramos el CSS computado antes de ocultar el nodo
         Object.assign(node.style, cs);
         // Finalmente se oculta el elemento
-        JsNode.#setDisplayValue(node, false);        
+        JsNode.#setDisplayValue(node, false);
     }
 
     /**
@@ -270,7 +270,7 @@ class JsNode {
             // Selecciona el display en función del computado o
             // del nombre de la etiqueta
             node.style.display = node.style.displayComputed ||
-                JsNode.#getDisplayValue(node.tagName);                        
+                JsNode.#getDisplayValue(node.tagName);
         } else {
             // Guarda el valor del display computado actual
             node.style.displayComputed = getComputedStyle(node).display;
@@ -286,13 +286,13 @@ class JsNode {
      */
     static #buildCssComputed(node) {
         let cs = JsNode.#getCssComputed(node);
-                
+
         // Si no tenemos medidas de ancho y alto, forzamos su recálculo
         if (cs.display === 'none' || cs.width === 'auto' || cs.height === 'auto' ||
             cs.width === '0px' || cs.height === '0px'
         ) {
             const display = node.style.display;
-            
+
             // Comprobamos si hay un display original
             if (cs.display === 'none' && node.style.displayComputed) {
                 cs.display = node.style.displayComputed;
@@ -375,7 +375,7 @@ class JsNode {
 
         async function _load(libs) {
             // Admite una librería individual en forma de ruta de cadena o envuelta en un objeto
-            if (typeof(libs) === 'string' || typeof(libs) === 'object') {
+            if (typeof (libs) === 'string' || typeof (libs) === 'object') {
                 libs = [libs];
             }
 
@@ -1262,7 +1262,7 @@ class JsNode {
 
         // Ordena detener la animación en curso, si la hubiere
         JsNode.#stopAnimation = true;
-    }    
+    }
 
     /**
      * Devuelve el valor de una propiedad CSS, establece el valor de una o
@@ -1968,6 +1968,24 @@ class JsNode {
         return this;
     }
 
+    // Procesa la finalización de la animación mediante promesas
+    #animationPromisesResolve(callback, resolve) {    
+        // Borra indicadores de animación
+        this.#nodes.forEach(node => delete node.isAnimating);
+
+        // Si hay llamadas en cola, llama a la primera
+        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+        if (JsNode.#stopAnimation) {
+            JsNode.#stopAnimation = false;
+        } else {
+            if (typeof (callback) === 'function') {
+                callback.call(this);
+            }
+        }
+        resolve();
+    }
+
     /**
      * Muestra la selección con la posibilidad de una animación.
      * @param {number} duration Tiempo en milisegundos de duración de la
@@ -2018,20 +2036,7 @@ class JsNode {
                         }
                     });
                     Promise.all(promises).then(() => {
-                        // Borra indicadores de animación
-                        this.#nodes.forEach(node => delete node.isAnimating);
-
-                        // Si hay llamadas en cola, llama a la primera
-                        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-                        if (JsNode.#stopAnimation) {
-                            JsNode.#stopAnimation = false;
-                        } else {
-                            if (typeof (callback) === 'function') {
-                                callback.call(this);
-                            }
-                        }
-                        resolve();
+                        this.#animationPromisesResolve(callback);                        
                     });
                 });
             }
@@ -2041,8 +2046,8 @@ class JsNode {
                 JsNode.#queue.push(JsNode.#wrapFunction(this.show, this, [duration, delay, effect, callback]));
             } else {
                 this.#nodes.forEach((node, index) => {
-                    if (!this.visible(index)) {         
-                        JsNode.#setDisplayValue(node, true);                        
+                    if (!this.visible(index)) {
+                        JsNode.#setDisplayValue(node, true);
                     }
                 });
 
@@ -2104,20 +2109,7 @@ class JsNode {
                         }
                     });
                     Promise.all(promises).then(() => {
-                        // Borra indicadores de animación
-                        this.#nodes.forEach(node => delete node.isAnimating);
-
-                        // Si hay llamadas en cola, llama a la primera
-                        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-                        if (JsNode.#stopAnimation) {
-                            JsNode.#stopAnimation = false;
-                        } else {
-                            if (typeof (callback) === 'function') {
-                                callback.call(this);
-                            }
-                        }
-                        resolve();
+                        this.#animationPromisesResolve(callback);                        
                     });
                 });
             }
@@ -2128,7 +2120,7 @@ class JsNode {
             } else {
                 this.#nodes.forEach((node, index) => {
                     if (this.visible(index)) {
-                        JsNode.#setDisplayValue(node, false);                        
+                        JsNode.#setDisplayValue(node, false);
                     }
                 });
 
@@ -2181,27 +2173,14 @@ class JsNode {
 
                     const promises = [];
                     this.#nodes.forEach((node, index) => {
-                        if (this.visible(index)) {                            
+                        if (this.visible(index)) {
                             promises.push(JsNode.#hideAnimateNode(node, duration, effect));
                         } else {
                             promises.push(JsNode.#showAnimateNode(node, duration, effect));
                         }
                     });
                     Promise.all(promises).then(() => {
-                        // Borra indicadores de animación
-                        this.#nodes.forEach(node => delete node.isAnimating);
-
-                        // Si hay llamadas en cola, llama a la primera
-                        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-                        if (JsNode.#stopAnimation) {
-                            JsNode.#stopAnimation = false;
-                        } else {
-                            if (typeof (callback) === 'function') {
-                                callback.call(this);
-                            }
-                        }
-                        resolve();
+                        this.#animationPromisesResolve(callback);                                                
                     });
                 });
             }
@@ -2211,7 +2190,7 @@ class JsNode {
                 JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect, callback]));
             } else {
                 this.#nodes.forEach((node, index) => {
-                    JsNode.#setDisplayValue(node, !this.visible(index));                    
+                    JsNode.#setDisplayValue(node, !this.visible(index));
                 });
 
                 // Si hay llamadas en cola, llama a la primera
