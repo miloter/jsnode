@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <script src="../jsnode.js"></script>
+    <script>
+        JsNode.use$().domLoaded().then(() => {
+            const pathBootstrap = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css';
+
+            function onBootstrapLoaded() {
+                $('#loadLibs').hide();
+                $('#msg').show()
+                    .append(`
+                        <div>
+                            <strong>Gracias por usar JsNode</strong>
+                        </div>`
+                    ).children(-1).css({
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '600px',
+                        height: '600px',
+                        color: 'blue',
+                        backgroundColor: 'lightgreen',
+                        padding: '2rem',
+                        borderRadius: '100%',
+                        border: '2px solid black'
+                    }).hide().show(7000, 0, 'opacity', function () {
+                        this.hide().css('color', 'red').show(7000, 0, 'all');
+                    });
+            }
+
+            // Ocultamos el mensaje
+            $('#msg').hide();
+
+            $('#loadLibs').on('click', () => {
+                // Se carga bootstrap si aún no lo está
+                if ($('head link[href$="bootstrap.min.css"]').length) {
+                    onBootstrapLoaded();
+                } else {
+                    // Podemos usar el método estático JsNode.loadLibs(...) para
+                    // cargar dinámicamente una o más librerías JavaScript o CSS
+                    $$.loadLibs(pathBootstrap).then(() => {
+                        onBootstrapLoaded();
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <button id="loadLibs">Cargar la librería Bootstrap</button>
+    </div>
+    <div id="msg" class="d-flex flex-column align-items-center gap-5 fs-1">
+        <span>JsNode es software libre con licencia MIT</span>
+    </div>
+</body>
+
+</html>

@@ -347,16 +347,17 @@ class JsNode {
     }
 
     /**
-     * LoadLibs: Carga de librerías .js y .css de forma síncrona usando
-     * JavaScript puro.     
-     * @example loadLibs.load(['lib1.css', 'lib2.css',
+     * Carga librerías JavaScript y CSS de forma síncrona usando JavaScript puro.     
+     * @example JsNode.loadLibs(['lib1.css', 'lib2.css',
      *              'lib1.js',
      *              {path: 'lib2.js', endBody: true, type: 'module' },
      *              {path: 'lib3.js', endBody: true, noExtension: true },
      *          ])
      *          .then(() => console.log('Todo cargado!!!'));
-     * @param {Array} Array de cadenas u objetos con información de las
-     * librerías a cargar.
+     * @param {string|object|Array<(string|object)>} libs string indicando la
+     * ruta de la librería, object con información de la librería a cargar
+     * array de string con las rutas de las librerías, o array de object, donde
+     * cada objeto contiene información de las librerías a cargar.
      * @returns {Promise<boolean>}
      */
     static loadLibs(libs) {
@@ -373,6 +374,11 @@ class JsNode {
         });
 
         async function _load(libs) {
+            // Admite una librería individual en forma de ruta de cadena o envuelta en un objeto
+            if (typeof(libs) === 'string' || typeof(libs) === 'object') {
+                libs = [libs];
+            }
+
             for (let lib of libs) {
                 let loaded;
                 const type = typeof (lib);
