@@ -48,8 +48,8 @@
                         backgroundColor: 'yellow',
                         padding: '0.5rem',
                         border: '2px solid red'
-                    }).hide(600, 600, 'opacity').then(r => {
-                        console.log(r.self, r.completed);
+                    }).hide(600, 600, 'opacity', function () {
+                        console.log(this);
                     });                
             });
 
@@ -68,8 +68,8 @@
                     backgroundColor: 'cyan',
                     padding: '0.5rem',
                     border: '2px solid red'
-                }).hide(600, 600, 'opacity').then(r => {
-                    console.log(r.self, r.completed);
+                }).hide(600, 600, 'opacity', function() {
+                    console.log(this);
                 });
             });
         });

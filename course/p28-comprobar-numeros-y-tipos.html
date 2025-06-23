@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda jsNode</title>
+    <style>
+        .fb-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #msg {
+            display: none;
+            /* display: inline; */
+            /* display: inline-block; */
+        }
+    </style>
+    <script src="../jsnode.js"></script>
+    <script>
+        // Vamos a usar $ como sustituto de <JsNode.select> y $$ de JsNode
+        JsNode.use$().domLoaded().then(() => {
+            const msg = $('#msg');
+            const cssMessageSuccess = {
+                maxWidth: '50%',
+                margin: '0.5rem auto',
+                color: 'blue',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                backgroundColor: 'lightgreen',
+                padding: '0.5rem',
+                border: '2px solid blue'
+            };
+
+            $('#checkNumber').on('click', function () {
+                const value = $('#selectNumber').val();
+
+                if (JsNode.isNumber(value)) {
+                    if (JsNode.isInteger(value)) {
+                        msg.html(`<p>${value} es un número entero</p>`)
+                            .css(cssMessageSuccess)
+                            .show(1200, 0, 'all', function () {
+                                this.hide(1200, 600);
+                            });
+                    } else {
+                        msg.html(`<p>${value} es un número decimal</p>`)
+                            .css({
+                                color: 'green',
+                                fontWeight: 'bold',
+                                backgroundColor: 'lightblue',
+                                padding: '0.5rem',
+                                border: '2px solid blue'
+                            }).show(600, 0, 'opacity', function () {
+                                this.hide(600, 600);
+                            });
+                    }
+                } else {
+                    msg.html(`<p>${value} no es un número</p>`)
+                        .css({
+                            color: 'red',
+                            fontWeight: 'bold',
+                            backgroundColor: 'yellow',
+                            padding: '0.5rem',
+                            border: '2px solid blue'
+                        }).show(600, 0, 'opacity', function () {
+                            this.hide(600, 600);
+                        });
+                }
+            });
+
+            function showMsg(content) {
+                msg.html(content)
+                    .css(cssMessageSuccess)
+                    .show(600, 0, 'opacity', function () {
+                        this.hide(1200, 1200);
+                    });
+            }
+
+            $('#getTypeName').on('click', function () {
+                const select = $('#selectTypeName');
+                const type = select.val();
+                const value = select.select(`option[value="${type}"]`).text();
+                                                
+                // Con la función de utilidad JsNode.getTypeName(value)
+                // podemos operar con un sistema coherente de nombres de tipo
+                // basados en cadenas PascalCase de la forma Undefined, JsNode
+                // Null, Number, ..., etc.
+                switch (type) {
+                    case 'number': return showMsg(`${value} es de tipo ${$$.getTypeName(parseFloat(value))}`);
+                    case 'string': return showMsg(`${value} es de tipo ${$$.getTypeName(value)}`);
+                    case 'boolean': return showMsg(`${value} es de tipo ${$$.getTypeName(Boolean(value))}`);
+                    case 'undefined': return showMsg(`${value} es de tipo ${$$.getTypeName(undefined)}`);
+                    case 'null': return showMsg(`${value} es de tipo ${$$.getTypeName(null)}`);
+                    case 'Date': return showMsg(`${value} es de tipo ${$$.getTypeName(new Date(value))}`);
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="fb-column">
+        <label>
+            Dato a comprobar como número
+            <select id="selectNumber">
+                <option value="1234">1234</option>
+                <option value="11.23">11.23</option>
+                <option value="hola">hola</option>
+                <option value="18a">18a</option>
+                <option value="1.2b">1.2b</option>
+            </select>
+            <button id="checkNumber">Comprobar</button>
+        </label>
+        <label>
+            ¿Qué tipo de dato es?
+            <select id="selectTypeName">
+                <option value="number">1.234</option>
+                <option value="string">'¡Hola Mundo!'</option>
+                <option value="boolean">true</option>
+                <option value="undefined">undefined</option>
+                <option value="null">null</option>
+                <option value="Date">1970-01-01 00:00:00.000</option>
+            </select>
+            <button id="getTypeName">Ver tipo</button>
+        </label>
+    </div>
+    <div id="msg"></div>
+</body>
+
+</html>

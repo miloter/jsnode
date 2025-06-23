@@ -16,15 +16,24 @@ class JsNode {
     static #dayNames3L = JsNode.#dayNames.map(d => d.substring(0, 3));
     static #monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     static #monthNames3L = JsNode.#monthNames.map(m => m.substring(0, 3));
-    
+    static #blockTagNames = ['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'CANVAS',
+            'DD', 'DIV', 'DL', 'DT', 'FIELDSET',
+            'FIGCAPTION', 'FIGURE', 'FOOTER', 'FORM', 'H1',
+            'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER',
+            'HR', 'LI', 'MAIN', 'NAV', 'NOSCRIPT',
+            'OL', 'P', 'PRE', 'SECTION', 'TABLE',
+            'TFOOT', 'UL', 'VIDEO'];
+
     // Fotogramas por animación: La duración se divide en fpa partes animadas
     static #fpa = 60;
-
     // Cola de animaciones
     static #queue = [];
 
+    // Flag que obliga a detener la animación actual si es true
+    static #stopAnimation = false;
+
     // Nodos DOM de la instancia actual
-    #nodes;        
+    #nodes;
 
     /**
      * Crea un nuevo JsNode.         
@@ -34,7 +43,7 @@ class JsNode {
         if (!(nodes instanceof Array)) {
             nodes = [nodes];
         }
-        this.#nodes = nodes;        
+        this.#nodes = nodes;
     }
 
     static #removeListeners(node, eventName) {
@@ -59,15 +68,9 @@ class JsNode {
     }
 
     static #removeData(node) {
-        if (node.cssNode) {
-            delete node.cssNode;
-        }
-        if (node.cssComputed) {
-            delete node.cssComputed;
-        }
-        if (node.isAnimating) {
-            delete node.isAnimating;
-        }
+        if (node.displayComputed) {
+            delete node.displayComputed;
+        }        
     }
 
     static #setAttr(node, name, value) {
@@ -76,7 +79,7 @@ class JsNode {
         } else {
             node.setAttribute(name, value)
         }
-    }    
+    }
 
     static async #buildResponse(r, contentType) {
         const resp = {};
@@ -125,6 +128,9 @@ class JsNode {
     }
 
     static #sleep(ms = 1) {
+        if (JsNode.#stopAnimation) {
+            return Promise.resolve();
+        }
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
@@ -132,34 +138,37 @@ class JsNode {
         const { display, width, height, opacity, overflow } = getComputedStyle(node);
 
         return { display, width, height, opacity, overflow };
-    }    
+    }
 
-    static #getCssNode(node) {
-        const { display, width, height, opacity, overflow } = node.style;
+    static async #showAnimateNode(node, ms, effect) {
+        const msPart = ms / JsNode.#fpa; // Milisegundos por animación        
+        const cs = JsNode.#buildCssComputed(node);
+        let width, height, opacity, widthPart, heightPart, opacityPart;
 
-        return { display, width, height, opacity, overflow };
-    }    
-    
-    static async #showAnimateNode(node, ms, effect) {                
-        const msPart = ms / JsNode.#fpa; // Milisegundos por animación
-        // Obtiene los estilos computados guardados antes de ocultar
-        const cs = node.cssComputed ?? JsNode.#getCssComputed(node);
+        // Si el display es inline, el efecto solo puede ser opacity
+        if (cs.display === 'inline') {
+            effect = 'opacity';
+        }
         
-        let width = (effect === 'all' || effect === 'width' ? 0 : parseFloat(cs.width));
-        let height = (effect === 'all' || effect === 'height' ? 0 : parseFloat(cs.height));
-        let opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
-        let widthPart = parseFloat(cs.width) / JsNode.#fpa;
-        let heightPart = parseFloat(cs.height) / JsNode.#fpa;
-        let opacityPart = cs.opacity / JsNode.#fpa;
+        // Prepara variables de animación
+        if (cs.display !== 'inline') {
+            width = (effect === 'all' || effect === 'width' ? 0 : parseFloat(cs.width));
+            height = (effect === 'all' || effect === 'height' ? 0 : parseFloat(cs.height));
+            widthPart = parseFloat(cs.width) / JsNode.#fpa;
+            heightPart = parseFloat(cs.height) / JsNode.#fpa;
+            // Estilos de animación a los valores iniciales
+            node.style.width = width + 'px';
+            node.style.height = height + 'px';
+        }
+
+        opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
+        opacityPart = cs.opacity / JsNode.#fpa;        
+        node.style.opacity = opacity;
+        node.style.display = cs.display;
         
-        // Estilos de animación a los valores iniciales
-        node.style.width = width + 'px';
-        node.style.height = height + 'px';
-        node.style.opacity = opacity;        
-        node.style.display = (cs.display !== 'none' ? cs.display : 'block');
         // Para impedir que el texto salga de la caja
         node.style.overflow = 'hidden';
-        
+
         while (ms > 0) {
             if (effect === 'all' || effect === 'width') {
                 width += widthPart;
@@ -170,34 +179,48 @@ class JsNode {
                 height += heightPart;
                 node.style.height = height + 'px';
             }
-            
+
             if (effect === 'all' || effect === 'opacity') {
                 opacity += opacityPart;
                 node.style.opacity = opacity;
-            }            
+            }
+
 
             await JsNode.#sleep(msPart);
 
-            ms -= msPart;
-        }        
+            if (JsNode.#stopAnimation) break;
 
-        // Restaura el css original del elemento
-        Object.assign(node.style, node.cssNode ?? {});        
+            ms -= msPart;
+        }
+
+        // Ajusta el css del nodo al computado        
+        Object.assign(node.style, cs);
     }
 
-    static async #hideAnimateNode(node, ms, effect) {        
-        const msPart = ms / JsNode.#fpa; // Milisegundos por animación
-        const cs = node.cssComputed;
+    static async #hideAnimateNode(node, ms, effect) {
+        const msPart = ms / JsNode.#fpa; // Milisegundos por animación                
+        const cs = JsNode.#buildCssComputed(node);
+        let width, height, opacity, widthPart, heightPart, opacityPart;
 
-        let width = parseFloat(cs.width);
-        let height = parseFloat(cs.height);
-        let opacity = cs.opacity;
-        let widthPart = width / JsNode.#fpa;
-        let heightPart = height / JsNode.#fpa;
-        let opacityPart = opacity / JsNode.#fpa;
-                
+        // Si el display es inline, el efecto solo puede ser opacity
+        if (cs.display === 'inline') {
+            effect = 'opacity';
+        }
+        
+        // Prepara variables de animación
+        if (cs.display !== 'inline') {        
+            width = parseFloat(cs.width);
+            height = parseFloat(cs.height);
+            widthPart = width / JsNode.#fpa;
+            heightPart = height / JsNode.#fpa;
+        }
+        
+        opacity = cs.opacity;
+        opacityPart = opacity / JsNode.#fpa;
+        
         // Para impedir que el texto salga de la caja
         node.style.overflow = 'hidden';
+
         while (ms > 0) {
             if (effect === 'all' || effect === 'width') {
                 width -= widthPart;
@@ -208,19 +231,23 @@ class JsNode {
                 height -= heightPart;
                 node.style.height = height + 'px';
             }
-            
+
             if (effect === 'all' || effect === 'opacity') {
                 opacity -= opacityPart;
                 node.style.opacity = opacity;
             }
-            
+
             await JsNode.#sleep(msPart);
 
-            ms -= msPart;
-        }                
+            if (JsNode.#stopAnimation) break;
 
+            ms -= msPart;
+        }
+
+        // Restauramos el CSS computado antes de ocultar el nodo
+        Object.assign(node.style, cs);
         // Finalmente se oculta el elemento
-        node.style.display = 'none';        
+        JsNode.#setDisplayValue(node, false);        
     }
 
     /**
@@ -232,8 +259,58 @@ class JsNode {
      * a la clausura a la función contenida con los argumentos correctos.
      */
     static #wrapFunction(fn, context, params) {
-        return function() {
+        return function () {
             fn.apply(context, params);
+        }
+    }
+
+    // Establece el valor adecuado de display en el nodo
+    static #setDisplayValue(node, isShow) {
+        if (isShow) {
+            // Selecciona el display en función del computado o
+            // del nombre de la etiqueta
+            node.style.display = node.style.displayComputed ||
+                JsNode.#getDisplayValue(node.tagName);                        
+        } else {
+            // Guarda el valor del display computado actual
+            node.style.displayComputed = getComputedStyle(node).display;
+            node.style.display = 'none';
+        }
+    }
+
+    /**
+     * Devuelve el CSS computado del nodo suministrado. El CSS
+     * devuelto equivale al que tendría el elemento en estado visible.
+     * @param {HTMLElement} node
+     * @returns {Object}
+     */
+    static #buildCssComputed(node) {
+        let cs = JsNode.#getCssComputed(node);
+                
+        // Si no tenemos medidas de ancho y alto, forzamos su recálculo
+        if (cs.display === 'none' || cs.width === 'auto' || cs.height === 'auto' ||
+            cs.width === '0px' || cs.height === '0px'
+        ) {
+            const display = node.style.display;
+            
+            // Comprobamos si hay un display original
+            if (cs.display === 'none' && node.style.displayComputed) {
+                cs.display = node.style.displayComputed;
+            }
+
+            node.style.display = (cs.display !== 'none' ? cs.display : JsNode.#getDisplayValue(node.tagName));
+            cs = JsNode.#getCssComputed(node);
+            node.style.display = display;
+        }
+
+        return cs;
+    }
+
+    static #getDisplayValue(tagName) {
+        if (JsNode.#blockTagNames.includes(tagName)) {
+            return 'block';
+        } else {
+            return 'inline';
         }
     }
 
@@ -363,21 +440,24 @@ class JsNode {
 
     /**
      * Selecciona elementos HTML en función de un selector CSS. También puede
-     * crearse la selección con un elemnto DOM o una lista de ellos.
-     * @param {string|HTMLElement|NodeList} selector Selector CSS Válido.
+     * crearse la selección con un elemento HTML, una lista de elementos HTML
+     * o un objeto JsNode.
+     * @param {string|HTMLElement|NodeList|Array|JsNode} selector Selector CSS Válido.
      * @returns Un objeto JsNode con la selección.
      */
     static select(selector) {
         let nodes;
         try {
-            if (selector instanceof HTMLElement) {
+            if (typeof (selector) === 'string') {
+                nodes = Array.from(document.querySelectorAll(selector));
+            } else if (selector instanceof HTMLElement) {
                 nodes = selector;
             } else if (selector instanceof NodeList) {
                 nodes = Array.from(selector);
             } else if (selector instanceof Array) {
                 nodes = selector;
-            } else {
-                nodes = Array.from(document.querySelectorAll(selector));
+            } else if (selector instanceof JsNode) {
+                nodes = selector.nodes;
             }
         } catch (error) {
             nodes = [];
@@ -1166,6 +1246,19 @@ class JsNode {
     }
 
     /**
+     * Detiene la animación actual y borra la cola de animaciones.
+     */
+    static stop() {
+        if (JsNode.#stopAnimation) return;
+
+        // Primero borra la cola
+        JsNode.#queue = [];
+
+        // Ordena detener la animación en curso, si la hubiere
+        JsNode.#stopAnimation = true;
+    }    
+
+    /**
      * Devuelve el valor de una propiedad CSS, establece el valor de una o
      * varias propiedades CSS o borra los estilos establecidos por código.
      * @param {string|object|undefined} name Nombre de propiedad, objeto con
@@ -1497,16 +1590,22 @@ class JsNode {
     }
 
     /**
-     * Agrega HTML después de cada elemento seleccionado.
-     * @param {string} html 
+     * Agrega HTML, un elemento HTML, una colección de elementos HTML
+     * un array de elementos HTML o un JsNode después de cada elemento
+     * seleccionado.
+     * @param {string|HTMLElement|NodeList|Array|JsNode} html 
      * @returns {JsNode}
      */
     after(html) {
         for (const node of this.#nodes) {
-            if (html instanceof HTMLElement) {
-                node.insertAdjacentElement('afterend', html);
-            } else {
+            if (typeof (html) === 'string') {
                 node.insertAdjacentHTML('afterend', html);
+            } else if (html instanceof HTMLElement) {
+                node.insertAdjacentElement('afterend', html);
+            } else if (html instanceof NodeList || html instanceof Array) {
+                html.forEach(e => node.insertAdjacentElement('afterend', e));
+            } else if (html instanceof JsNode) {
+                html.nodes.forEach(e => node.insertAdjacentElement('afterend', e));
             }
         }
 
@@ -1514,16 +1613,21 @@ class JsNode {
     }
 
     /**
-     * Agrega HTML antes de cada elemento seleccionado.
-     * @param {string} html 
+     * Agrega HTML, un elemento HTML, una colección de elementos HTML
+     * un array de elementos HTML o un JsNode antes de cada elemento seleccionado.
+     * @param {string|HTMLElement|NodeList|Array|JsNode} html 
      * @returns {JsNode}
      */
     before(html) {
         for (const node of this.#nodes) {
-            if (html instanceof HTMLElement) {
-                node.insertAdjacentElement('beforebegin', html);
-            } else {
+            if (typeof (html) === 'string') {
                 node.insertAdjacentHTML('beforebegin', html);
+            } else if (html instanceof HTMLElement) {
+                node.insertAdjacentElement('beforebegin', html);
+            } else if (html instanceof NodeList || html instanceof Array) {
+                html.forEach(e => node.insertAdjacentElement('beforebegin', e));
+            } else if (html instanceof JsNode) {
+                html.nodes.forEach(e => node.insertAdjacentElement('beforebegin', e));
             }
         }
 
@@ -1531,16 +1635,22 @@ class JsNode {
     }
 
     /**
-     * Agrega HTML después del último elemento hijo de cada elemento seleccionado.
-     * @param {string} html 
+     * Agrega HTML, un elemento HTML, una colección de elementos HTML
+     * un array de elementos HTML o un JsNode después del último elemento hijo
+     * de cada elemento seleccionado.
+     * @param {string|HTMLElement|NodeList|Array|JsNode} html 
      * @returns {JsNode}
      */
     append(html) {
         for (const node of this.#nodes) {
-            if (html instanceof HTMLElement) {
-                node.insertAdjacentElement('beforeend', html);
-            } else {
+            if (typeof (html) === 'string') {
                 node.insertAdjacentHTML('beforeend', html);
+            } else if (html instanceof HTMLElement) {
+                node.insertAdjacentElement('beforeend', html);
+            } else if (html instanceof NodeList || html instanceof Array) {
+                html.forEach(e => node.insertAdjacentElement('beforeend', e));
+            } else if (html instanceof JsNode) {
+                html.nodes.forEach(e => node.insertAdjacentElement('beforeend', e));
             }
         }
 
@@ -1548,20 +1658,42 @@ class JsNode {
     }
 
     /**
-     * Agrega HTML antes del primer elemento hijo de cada elemento seleccionado.
-     * @param {string} html 
+     * Agrega HTML, un elemento HTML, una colección de elementos HTML
+     * un array de elementos HTML o un JsNode antes del primer hijo de cada
+     * elemento seleccionado.
+     * @param {string|HTMLElement|NodeList|Array|JsNode} html 
      * @returns {JsNode}
      */
     prepend(html) {
         for (const node of this.#nodes) {
-            if (html instanceof HTMLElement) {
-                node.insertAdjacentElement('afterbegin', html);
-            } else {
+            if (typeof (html) === 'string') {
                 node.insertAdjacentHTML('afterbegin', html);
+            } else if (html instanceof HTMLElement) {
+                node.insertAdjacentElement('afterbegin', html);
+            } else if (html instanceof NodeList || html instanceof Array) {
+                html.forEach(e => node.insertAdjacentElement('afterbegin', e));
+            } else if (html instanceof JsNode) {
+                html.nodes.forEach(e => node.insertAdjacentElement('afterbegin', e));
             }
         }
 
         return this;
+    }
+
+    /**
+     * Realiza una copia de cada elemento de la selección actual. La copia
+     * incluye el contenido interno de cada elemento. No incluye los datos
+     * almacenados por JsNode para su trabajo interno.
+     * @returns {JsNode} Un JsNode a la copia.
+     */
+    clone() {
+        const clones = [];
+
+        for (const node of this.#nodes) {
+            clones.push(node.cloneNode(true));
+        }
+
+        return new JsNode(clones);
     }
 
     /**
@@ -1828,273 +1960,260 @@ class JsNode {
         });
 
         return this;
-    }    
-    
+    }
+
     /**
      * Muestra la selección con la posibilidad de una animación.
      * @param {number} duration Tiempo en milisegundos de duración de la
-     * animación, antes de mostrar la selección. Si se suministra, la
-     * función devuelve una promesa cumplida con un objeto conteniendo una
-     * referencia a la selección y si se ha completado o no la animación. Si
-     * la animación no se ha completado es porque se ha puesto en cola y se
-     * completará más adelante.
+     * animación, antes de mostrar la selección.
      * @param {number} delay Tiempo en milegundos de retraso antes de
      * comenzar la animación.
      * @param {string} effect Tipo de efecto deseado:
      * 
-     * 'all': Efecto por defecto, se aumentan anchura, altura y opacidad.
+     * 'all': Se aumentan anchura, altura y opacidad.
      * 
      * 'width': Se aumenta solo la anchura.
      * 
      * 'height': Se aumenta solo la altura.
      * 
-     * 'opacity': Se aumenta solo la opacidad.     
+     * 'opacity': Efector por defecto. Se aumenta solo la opacidad.     
      * 
-     * @returns {JsNode|Promise<JsNode, boolean>}
+     * @param {Function|undefined} Función de callback opcional que será invocada
+     * cuando la animación acabe.
+     * @returns {JsNode}
      */
-    show(duration = undefined, delay = 0, effect = 'all') {
-        if (duration !== undefined) {            
+    show(duration = undefined, delay = 0, effect = 'opacity', callback = undefined) {
+        if (duration !== undefined) {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
-                JsNode.#queue.push(JsNode.#wrapFunction(this.show, this, [duration, delay, effect]));
+                JsNode.#queue.push(JsNode.#wrapFunction(this.show, this, [duration, delay, effect, callback]));
+            } else {
+                new Promise(async resolve => {
+                    effect = effect.toLowerCase();
 
-                // Se resuelve pero sin completar
-                return Promise.resolve({ self: this, completed: false });
+                    // Prepara los nodos que se tiene que animar
+                    this.#nodes.forEach((node, index) => {
+                        // Solo si no está visible se muestra
+                        if (!this.visible(index)) {
+                            node.isAnimating = true;
+                        }
+                    });
+
+                    // Comprueba si debe aplicar un retraso
+                    if (delay !== undefined && delay > 0) {
+                        await JsNode.#sleep(delay);
+                    }
+
+                    const promises = [];
+                    this.#nodes.forEach((node, index) => {
+                        // Solo si no está visible se muestra
+                        if (!this.visible(index)) {
+                            promises.push(JsNode.#showAnimateNode(node, duration, effect));
+                        }
+                    });
+                    Promise.all(promises).then(() => {
+                        // Borra indicadores de animación
+                        this.#nodes.forEach(node => delete node.isAnimating);
+
+                        // Si hay llamadas en cola, llama a la primera
+                        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+                        if (JsNode.#stopAnimation) {
+                            JsNode.#stopAnimation = false;
+                        } else {
+                            if (typeof (callback) === 'function') {
+                                callback.call(this);
+                            }
+                        }
+                        resolve();
+                    });
+                });
             }
-
-            effect = effect.toLowerCase();
-            return new Promise(async resolve => {                
-                // Prepara los nodos que se tiene que animar
-                this.#nodes.forEach((node, index) => {                
-                    // Solo si no está visible se muestra
-                    if (!this.visible(index)) {
-                        node.isAnimating = true;
-                    }
-                });
-
-                // Comprueba si debe aplicar un retraso
-                if (delay !== undefined) {
-                    await JsNode.#sleep(delay);
-                }                
-
-                const promises = [];
-                this.#nodes.forEach((node, index) => {                
-                    // Solo si no está visible se muestra
-                    if (!this.visible(index)) {                        
-                        promises.push(JsNode.#showAnimateNode(node, duration, effect));
-                    }
-                });
-                Promise.all(promises).then(() => {
-                    // Borra indicadores de animación
-                    this.#nodes.forEach(node => delete node.isAnimating);
-
-                    // Si hay llamadas en cola, llama a la primera
-                    if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-                    
-                    resolve({ self: this, completed: true });
-                });                
-            });
         } else {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
-                JsNode.#queue.push(JsNode.#wrapFunction(this.show, this, [duration, delay, effect]));                
-                return this;
+                JsNode.#queue.push(JsNode.#wrapFunction(this.show, this, [duration, delay, effect, callback]));
+            } else {
+                this.#nodes.forEach((node, index) => {
+                    if (!this.visible(index)) {         
+                        JsNode.#setDisplayValue(node, true);                        
+                    }
+                });
+
+                // Si hay llamadas en cola, llama a la primera
+                if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
             }
-
-            this.#nodes.forEach((node, index) => {
-                if (!this.visible(index)) {                    
-                    // Restaura los valores previos a ocultarse (si los hay)
-                    Object.assign(node.style, node.cssNode ?? { display: 'block'});
-                }
-            });
-
-            // Si hay llamadas en cola, llama a la primera
-            if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());            
-
-            return this;
         }
+
+        return this;
     }
 
     /**
      * Oculta la selección con la posibilidad de una animación.
      * @param {number} duration Tiempo en milisegundos de duración de la
-     * animación, antes de ocultar la selección. Si se suministra, la
-     * función devuelve una promesa cumplida con un objeto conteniendo una
-     * referencia a la selección y si se ha completado o no la animación. Si
-     * la animación no se ha completado es porque se ha puesto en cola y se
-     * completará más adelante.
+     * animación, antes de ocultar la selección.
      * @param {number} delay Tiempo en milegundos de retraso antes de
      * comenzar la animación.
      * @param {string} effect Tipo de efecto deseado:
      * 
-     * 'all': Efecto por defecto, se disminuyen anchura, altura y opacidad.
+     * 'all': Se disminuyen anchura, altura y opacidad.
      * 
      * 'width': Se disminuye solo la anchura.
      * 
      * 'height': Se disminuye solo la altura.
      * 
-     * 'opacity': Se disminuye solo la opacidad.
+     * 'opacity': Efector por defecto. Se disminuye solo la opacidad.
      *     
-     * @returns {JsNode|Promise<JsNode, boolean>}
+     * @param {Function|undefined} Función de callback opcional que será invocada
+     * cuando la animación acabe, dentro del callback, this referencia al JsNode actual.
+     * @returns {JsNode}
      */
-    hide(duration = undefined, delay = undefined, effect = 'all') {
+    hide(duration = undefined, delay = 0, effect = 'opacity', callback = undefined) {
         if (duration !== undefined) {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
-                JsNode.#queue.push(JsNode.#wrapFunction(this.hide, this, [duration, delay, effect]));
+                JsNode.#queue.push(JsNode.#wrapFunction(this.hide, this, [duration, delay, effect, callback]));
+            } else {
+                new Promise(async resolve => {
+                    effect = effect.toLowerCase();
 
-                // Se resuelve pero sin completar
-                return Promise.resolve({ self: this, completed: false });
+                    // Prepara los nodos que se tiene que animar
+                    this.#nodes.forEach((node, index) => {
+                        // Solo si está visible se oculta
+                        if (this.visible(index)) {
+                            node.isAnimating = true;
+                        }
+                    });
+
+                    // Comprueba si debe aplicar un retraso
+                    if (delay !== undefined && delay > 0) {
+                        await JsNode.#sleep(delay);
+                    }
+
+                    const promises = [];
+                    this.#nodes.forEach((node, index) => {
+                        // Solo si esta visible se oculta
+                        if (this.visible(index)) {
+                            promises.push(JsNode.#hideAnimateNode(node, duration, effect));
+                        }
+                    });
+                    Promise.all(promises).then(() => {
+                        // Borra indicadores de animación
+                        this.#nodes.forEach(node => delete node.isAnimating);
+
+                        // Si hay llamadas en cola, llama a la primera
+                        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+                        if (JsNode.#stopAnimation) {
+                            JsNode.#stopAnimation = false;
+                        } else {
+                            if (typeof (callback) === 'function') {
+                                callback.call(this);
+                            }
+                        }
+                        resolve();
+                    });
+                });
             }
-            effect = effect.toLowerCase();
-            return new Promise(async resolve => {
-                // Prepara los nodos que se tiene que animar
-                this.#nodes.forEach((node, index) => {                
-                    // Solo si está visible se oculta
-                    if (this.visible(index)) {
-                        node.isAnimating = true;
-                    }
-                });
-
-                // Comprueba si debe aplicar un retraso
-                if (delay !== undefined) {
-                    await JsNode.#sleep(delay);
-                }                       
-
-                const promises = [];
-                this.#nodes.forEach((node, index) => {                
-                    // Solo si esta visible se oculta
-                    if (this.visible(index)) {
-                        // Guarda antes los estilos CSS necesarios para animaciones
-                        node.cssNode = JsNode.#getCssNode(node);
-                        node.cssComputed = JsNode.#getCssComputed(node);
-                        promises.push(JsNode.#hideAnimateNode(node, duration, effect));
-                    }
-                });
-                Promise.all(promises).then(() => {
-                    // Borra indicadores de animación
-                    this.#nodes.forEach(node => delete node.isAnimating);
-
-                    // Si hay llamadas en cola, llama a la primera
-                    if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-                    resolve({ self: this, completed: true });
-                });
-            });
         } else {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
-                JsNode.#queue.push(JsNode.#wrapFunction(this.hide, this, [duration, delay, effect]));
-                
-                return this;
+                JsNode.#queue.push(JsNode.#wrapFunction(this.hide, this, [duration, delay, effect, callback]));
+            } else {
+                this.#nodes.forEach((node, index) => {
+                    if (this.visible(index)) {
+                        JsNode.#setDisplayValue(node, false);                        
+                    }
+                });
+
+                // Si hay llamadas en cola, llama a la primera
+                if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
             }
+        }
 
-            this.#nodes.forEach((node, index) => {
-                if (this.visible(index)) {
-                    // Guarda antes los estilos CSS necesarios para animaciones
-                    node.cssNode = JsNode.#getCssNode(node);
-                    node.cssComputed = JsNode.#getCssComputed(node);
-                    node.style.display = 'none';
-                }
-            });
-
-            // Si hay llamadas en cola, llama a la primera
-            if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-            return this;
-        }        
+        return this;
     }
 
     /**
      * Muestra u oculta la selección con la posibilidad de una animación.
      * @param {number} duration Tiempo en milisegundos de duración de la
-     * animación, antes de mostrar/ocultar la selección. Si se suministra, la
-     * función devuelve una promesa cumplida con un objeto conteniendo una
-     * referencia a la selección y si se ha completado o no la animación. Si
-     * la animación no se ha completado es porque se ha puesto en cola y se
-     * completará más adelante.
+     * animación, antes de mostrar/ocultar la selección.
      * @param {number} delay Tiempo en milegundos de retraso antes de
      * comenzar la animación.
      * @param {string} effect Tipo de efecto deseado:
      * 
-     * 'all': Efecto por defecto, se aumentan/disminuyen anchura, altura y opacidad.
+     * 'all': Se aumentan/disminuyen anchura, altura y opacidad.
      * 
      * 'width': Se aumenta/disminuye solo la anchura.
      * 
      * 'height': Se aumenta/disminuye solo la altura.
      * 
-     * 'opacity': Se aumenta/disminuye solo la opacidad.     
+     * 'opacity': Efector por defecto. Se aumenta/disminuye solo la opacidad.     
      * 
-     * @returns {JsNode|Promise<JsNode, boolean>}
+     * @param {Function|undefined} Función de callback opcional que será invocada
+     * cuando la animación acabe, dentro del callback, this referencia al JsNode actual.
+     * @returns {JsNode}
      */
-    toggle(duration = undefined, delay = 0, effect = 'all') {
+    toggle(duration = undefined, delay = 0, effect = 'opacity', callback = undefined) {
         if (duration !== undefined) {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
-                JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect]));
+                JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect, callback]));
+            } else {
+                new Promise(async resolve => {
+                    effect = effect.toLowerCase();
 
-                // Se resuelve pero sin completar
-                return Promise.resolve({ self: this, completed: false });
-            }
+                    // Prepara los nodos que se tiene que animar
+                    this.#nodes.forEach(node => {
+                        node.isAnimating = true;
+                    });
 
-            effect = effect.toLowerCase();
-            return new Promise(async resolve => {
-                // Prepara los nodos que se tiene que animar
-                this.#nodes.forEach(node => {                                                        
-                    node.isAnimating = true;                    
-                });
-
-                // Comprueba si debe aplicar un retraso
-                if (delay !== undefined) {
-                    await JsNode.#sleep(delay);
-                }                
-
-                const promises = [];
-                this.#nodes.forEach((node, index) => {                    
-                    if (this.visible(index)) {
-                        // Guarda antes los estilos CSS necesarios para animaciones
-                        node.cssNode = JsNode.#getCssNode(node);
-                        node.cssComputed = JsNode.#getCssComputed(node);
-                        promises.push(JsNode.#hideAnimateNode(node, duration, effect));
-                    } else {
-                        promises.push(JsNode.#showAnimateNode(node, duration, effect));
+                    // Comprueba si debe aplicar un retraso
+                    if (delay !== undefined && delay > 0) {
+                        await JsNode.#sleep(delay);
                     }
+
+                    const promises = [];
+                    this.#nodes.forEach((node, index) => {
+                        if (this.visible(index)) {                            
+                            promises.push(JsNode.#hideAnimateNode(node, duration, effect));
+                        } else {
+                            promises.push(JsNode.#showAnimateNode(node, duration, effect));
+                        }
+                    });
+                    Promise.all(promises).then(() => {
+                        // Borra indicadores de animación
+                        this.#nodes.forEach(node => delete node.isAnimating);
+
+                        // Si hay llamadas en cola, llama a la primera
+                        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+                        if (JsNode.#stopAnimation) {
+                            JsNode.#stopAnimation = false;
+                        } else {
+                            if (typeof (callback) === 'function') {
+                                callback.call(this);
+                            }
+                        }
+                        resolve();
+                    });
                 });
-                Promise.all(promises).then(() => {
-                    // Borra indicadores de animación
-                    this.#nodes.forEach(node => delete node.isAnimating);
-
-                    // Si hay llamadas en cola, llama a la primera
-                    if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-                    resolve({ self: this, completed: true });
-                });                
-            });
+            }
         } else {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
-                JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect]));
-                
-                return this;
+                JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect, callback]));
+            } else {
+                this.#nodes.forEach((node, index) => {
+                    JsNode.#setDisplayValue(node, !this.visible(index));                    
+                });
+
+                // Si hay llamadas en cola, llama a la primera
+                if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
             }
+        }
 
-            this.#nodes.forEach((node, index) => {
-                if (this.visible(index)) {
-                    // Guarda antes los estilos CSS necesarios para animaciones
-                    node.cssNode = JsNode.#getCssNode(node);
-                    node.cssComputed = JsNode.#getCssComputed(node);
-                    node.style.display = 'none';
-                } else {
-                    // Restaura los valores previos a ocultarse (si los hay)
-                    Object.assign(node.style, node.cssNode ?? { display: 'block'});
-                }
-            });
-
-            // Si hay llamadas en cola, llama a la primera
-            if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-            return this;
-        }                
+        return this;
     }
 
     /**
@@ -2130,7 +2249,7 @@ class JsNode {
         while (this.#nodes.length) {
             const node = this.#nodes.at(-1);
             JsNode.#removeAllListeners(node);
-            JsNode.#removeData(node);            
+            JsNode.#removeData(node);
             node.remove();
             this.#nodes.pop();
         }
