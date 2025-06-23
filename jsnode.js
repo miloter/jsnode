@@ -2036,7 +2036,7 @@ class JsNode {
                         }
                     });
                     Promise.all(promises).then(() => {
-                        this.#animationPromisesResolve(callback);                        
+                        this.#animationPromisesResolve(callback, resolve);                        
                     });
                 });
             }
@@ -2109,7 +2109,7 @@ class JsNode {
                         }
                     });
                     Promise.all(promises).then(() => {
-                        this.#animationPromisesResolve(callback);                        
+                        this.#animationPromisesResolve(callback, resolve);                        
                     });
                 });
             }
@@ -2180,7 +2180,7 @@ class JsNode {
                         }
                     });
                     Promise.all(promises).then(() => {
-                        this.#animationPromisesResolve(callback);                                                
+                        this.#animationPromisesResolve(callback, resolve);
                     });
                 });
             }
