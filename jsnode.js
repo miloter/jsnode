@@ -65,7 +65,7 @@ class JsNode {
             this.#nodes = [];
             console.error(error);
             console.info('Se continúa sin nodos seleccionados');
-        }                
+        }
     }
 
     static #removeListeners(node, eventName) {
@@ -190,7 +190,7 @@ class JsNode {
         opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
         opacityPart = cs.opacity / JsNode.#fpa;
         node.style.opacity = opacity;
-        node.style.display = cs.display;        
+        node.style.display = cs.display;
 
         // Para impedir que el texto salga de la caja
         node.style.overflow = 'hidden';
@@ -279,7 +279,7 @@ class JsNode {
         }
 
         // Restauramos el CSS computado antes de ocultar el nodo
-        Object.assign(node.style, cs);        
+        Object.assign(node.style, cs);
 
         // Finalmente se oculta el elemento
         JsNode.#setDisplayValue(node, false, effect, true);
@@ -307,16 +307,17 @@ class JsNode {
             // La propiedad visibility se compruebaa antes que display, dado
             // que display puede modificar esta primera
             if (cs.visibility === 'hidden' || cs.visibility === 'collapse') {
+                // Se guarda para cuando se quiera ocultar
                 node.style.visibilityComputed = cs.visibility;
                 node.style.visibility = 'visible';
-            }      
+            }
 
             // Selecciona el display en función del computado o
             // del nombre de la etiqueta
             node.style.display = node.style.displayComputed ||
-                JsNode.#getDisplayValue(node.tagName);                               
+                JsNode.#getDisplayValue(node.tagName);
         } else {
-            // Guarda el valor del display computado actual
+            // Guarda el valor del display computado actual (nodo visible)
             node.style.displayComputed = cs.display;
             if (effect === 'opacity' || (!isAnimation && node.style.visibilityComputed)) {
                 node.style.visibility = node.style.visibilityComputed ?? 'hidden';
@@ -366,7 +367,7 @@ class JsNode {
         } else if (tagName === 'TBODY') {
             return 'table-row-group';
         } else if (tagName === 'TFOOT') {
-            return 'table-footer-group';        
+            return 'table-footer-group';
         } else {
             return 'inline';
         }
@@ -1301,6 +1302,46 @@ class JsNode {
 
         // Ordena detener la animación en curso, si la hubiere
         JsNode.#stopAnimation = true;
+    }    
+
+    // Actualiza los nodos que contengan displayComputed y visibilityComputed
+    #updateDisplayAndVisibility() {
+        this.#nodes.forEach(node => {
+            if (node.style.displayComputed || node.style.visibilityComputed) {
+                const cs = getComputedStyle(node);
+
+                if (node.style.displayComputed && cs.display !== 'none' &&
+                    cs.display !== node.style.displayComputed) {
+                    node.style.displayComputed = cs.display;
+                }
+                if (node.style.visibilityComputed &&
+                    cs.visibility !== node.style.visibilityComputed) {
+                    if (cs.visibility === 'visible') {
+                        delete node.style.visibilityComputed;
+                    } else {
+                        node.style.visibilityComputed = cs.visibility;
+                    }
+                }
+            }
+        });
+    }
+
+    // Procesa la finalización de la animación mediante promesas
+    #animationPromisesResolve(callback, resolve) {
+        // Borra indicadores de animación
+        this.#nodes.forEach(node => delete node.isAnimating);
+
+        // Si hay llamadas en cola, llama a la primera
+        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
+
+        if (JsNode.#stopAnimation) {
+            JsNode.#stopAnimation = false;
+        } else {
+            if (typeof (callback) === 'function') {
+                callback.call(this);
+            }
+        }
+        resolve();
     }
 
     /**
@@ -1317,6 +1358,8 @@ class JsNode {
             this.#nodes.forEach(node => {
                 node.style[name] = value;
             });
+            this.#updateDisplayAndVisibility();
+
             return this;
         } else {
             if (typeof (name) === 'object') {
@@ -1325,6 +1368,7 @@ class JsNode {
                         node.style[key] = name[key];
                     }
                 });
+                this.#updateDisplayAndVisibility();
 
                 return this;
             } else if (name === undefined) {
@@ -1333,6 +1377,7 @@ class JsNode {
                     while (node.style[0]) {
                         node.style[node.style[0]] = '';
                     }
+                    this.#updateDisplayAndVisibility();
                 });
 
                 return this;
@@ -1964,9 +2009,11 @@ class JsNode {
      */
     addClass(className) {
         const classes = className.trim().split(/\s+/);
+
         this.#nodes.forEach(node => {
             classes.forEach(c => node.classList.add(c));
         });
+        this.#updateDisplayAndVisibility();
 
         return this;
     }
@@ -1979,9 +2026,11 @@ class JsNode {
      */
     removeClass(className) {
         const classes = className.trim().split(/\s+/);
+
         this.#nodes.forEach(node => {
             classes.forEach(c => node.classList.remove(c));
         });
+        this.#updateDisplayAndVisibility();
 
         return this;
     }
@@ -1994,6 +2043,7 @@ class JsNode {
      */
     toggleClass(className) {
         const classes = className.trim().split(/\s+/);
+
         this.#nodes.forEach(node => {
             classes.forEach(c => {
                 if (node.classList.contains(c)) {
@@ -2003,26 +2053,9 @@ class JsNode {
                 }
             });
         });
+        this.#updateDisplayAndVisibility();
 
         return this;
-    }
-
-    // Procesa la finalización de la animación mediante promesas
-    #animationPromisesResolve(callback, resolve) {
-        // Borra indicadores de animación
-        this.#nodes.forEach(node => delete node.isAnimating);
-
-        // Si hay llamadas en cola, llama a la primera
-        if (JsNode.#queue.length) setTimeout(JsNode.#queue.shift());
-
-        if (JsNode.#stopAnimation) {
-            JsNode.#stopAnimation = false;
-        } else {
-            if (typeof (callback) === 'function') {
-                callback.call(this);
-            }
-        }
-        resolve();
     }
 
     /**
