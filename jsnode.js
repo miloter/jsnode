@@ -2023,19 +2023,19 @@ class JsNode {
      * comenzar la animación.
      * @param {string} effect Tipo de efecto deseado:
      * 
-     * 'all': Se aumentan anchura, altura y opacidad.
+     * 'all': Efector por defecto. Se aumentan anchura, altura y opacidad.
      * 
      * 'width': Se aumenta solo la anchura.
      * 
      * 'height': Se aumenta solo la altura.
      * 
-     * 'opacity': Efector por defecto. Se aumenta solo la opacidad.     
+     * 'opacity': Se aumenta solo la opacidad.     
      * 
      * @param {Function|undefined} Función de callback opcional que será invocada
      * cuando la animación acabe.
      * @returns {JsNode}
      */
-    show(duration = undefined, delay = 0, effect = 'opacity', callback = undefined) {
+    show(duration = undefined, delay = 0, effect = 'all', callback = undefined) {
         if (duration !== undefined) {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
@@ -2096,19 +2096,19 @@ class JsNode {
      * comenzar la animación.
      * @param {string} effect Tipo de efecto deseado:
      * 
-     * 'all': Se disminuyen anchura, altura y opacidad.
+     * 'all': Efector por defecto. Se disminuyen anchura, altura y opacidad.
      * 
      * 'width': Se disminuye solo la anchura.
      * 
      * 'height': Se disminuye solo la altura.
      * 
-     * 'opacity': Efector por defecto. Se disminuye solo la opacidad.
+     * 'opacity': Se disminuye solo la opacidad.
      *     
      * @param {Function|undefined} Función de callback opcional que será invocada
      * cuando la animación acabe, dentro del callback, this referencia al JsNode actual.
      * @returns {JsNode}
      */
-    hide(duration = undefined, delay = 0, effect = 'opacity', callback = undefined) {
+    hide(duration = undefined, delay = 0, effect = 'all', callback = undefined) {
         if (duration !== undefined) {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
@@ -2169,19 +2169,19 @@ class JsNode {
      * comenzar la animación.
      * @param {string} effect Tipo de efecto deseado:
      * 
-     * 'all': Se aumentan/disminuyen anchura, altura y opacidad.
+     * 'all': Efector por defecto. Se aumentan/disminuyen anchura, altura y opacidad.
      * 
      * 'width': Se aumenta/disminuye solo la anchura.
      * 
      * 'height': Se aumenta/disminuye solo la altura.
      * 
-     * 'opacity': Efector por defecto. Se aumenta/disminuye solo la opacidad.     
+     * 'opacity': Se aumenta/disminuye solo la opacidad.     
      * 
      * @param {Function|undefined} Función de callback opcional que será invocada
      * cuando la animación acabe, dentro del callback, this referencia al JsNode actual.
      * @returns {JsNode}
      */
-    toggle(duration = undefined, delay = 0, effect = 'opacity', callback = undefined) {
+    toggle(duration = undefined, delay = 0, effect = 'all', callback = undefined) {
         if (duration !== undefined) {
             // Si hay nodos animándose, la llamada se almacena en la cola para después
             if (this.#nodes.some(n => n.isAnimating)) {
