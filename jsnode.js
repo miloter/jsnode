@@ -318,7 +318,7 @@ class JsNode {
         } else {
             // Guarda el valor del display computado actual
             node.style.displayComputed = cs.display;
-            if (effect === 'opacity') {            
+            if (effect === 'opacity' || node.style.visibilityComputed) {            
                 node.style.visibility = node.style.visibilityComputed ?? 'hidden';
             } else {
                 node.style.display = 'none';
@@ -357,6 +357,16 @@ class JsNode {
     static #getDisplayValue(tagName) {
         if (JsNode.#blockTagNames.includes(tagName)) {
             return 'block';
+        } else if (tagName === 'TR') {
+            return 'table-row';
+        } else if (tagName === 'TH' || tagName === 'TD') {
+            return 'table-cell';
+        } else if (tagName === 'THEAD') {
+            return 'table-header-group';
+        } else if (tagName === 'TBODY') {
+            return 'table-row-group';
+        } else if (tagName === 'TFOOT') {
+            return 'table-footer-group';        
         } else {
             return 'inline';
         }
