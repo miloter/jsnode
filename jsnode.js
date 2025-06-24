@@ -93,6 +93,10 @@ class JsNode {
         if (node.displayComputed) {
             delete node.displayComputed;
         }
+
+        if (node.visibilityComputed) {
+            delete node.visibilityComputed;
+        }
     }
 
     static #setAttr(node, name, value) {
@@ -157,9 +161,9 @@ class JsNode {
     }
 
     static #getCssComputed(node) {
-        const { display, width, height, opacity, overflow } = getComputedStyle(node);
+        const { display, width, height, opacity, overflow, visibility } = getComputedStyle(node);
 
-        return { display, width, height, opacity, overflow };
+        return { display, width, height, opacity, overflow, visibility };
     }
 
     static async #showAnimateNode(node, ms, effect) {
@@ -167,13 +171,14 @@ class JsNode {
         const cs = JsNode.#buildCssComputed(node);
         let width, height, opacity, widthPart, heightPart, opacityPart;
 
-        // Si el display es inline, el efecto solo puede ser opacity
-        if (cs.display === 'inline') {
+        // Si el display es inline, o la visibilidad es una de
+        // (hidden, collapse), el efecto solo puede ser opacity
+        if (cs.display === 'inline' || cs.visibility === 'hidden' || cs.visibility === 'collapse') {
             effect = 'opacity';
         }
 
         // Prepara variables de animación
-        if (cs.display !== 'inline') {
+        if (effect !== 'opacity') {
             width = (effect === 'all' || effect === 'width' ? 0 : parseFloat(cs.width));
             height = (effect === 'all' || effect === 'height' ? 0 : parseFloat(cs.height));
             widthPart = parseFloat(cs.width) / JsNode.#fpa;
@@ -186,10 +191,18 @@ class JsNode {
         opacity = (effect === 'all' || effect === 'opacity' ? 0 : cs.opacity);
         opacityPart = cs.opacity / JsNode.#fpa;
         node.style.opacity = opacity;
-        node.style.display = cs.display;
+        node.style.display = cs.display;        
 
         // Para impedir que el texto salga de la caja
         node.style.overflow = 'hidden';
+
+        // Para mostrar nodos con visibility una de (hidden, collapse)
+        if (cs.visibility === 'hidden' || cs.visibility === 'collapse') {
+            // Para poder recuperarla en caso necesario
+            node.style.visibilityComputed = cs.visibility;
+            cs.visibility = 'visible';
+            node.style.visibility = 'visible'
+        }
 
         while (ms > 0) {
             if (effect === 'all' || effect === 'width') {
@@ -230,7 +243,7 @@ class JsNode {
         }
 
         // Prepara variables de animación
-        if (cs.display !== 'inline') {
+        if (cs.display !== 'inline' && effect !== 'opacity') {
             width = parseFloat(cs.width);
             height = parseFloat(cs.height);
             widthPart = width / JsNode.#fpa;
@@ -269,7 +282,7 @@ class JsNode {
         // Restauramos el CSS computado antes de ocultar el nodo
         Object.assign(node.style, cs);
         // Finalmente se oculta el elemento
-        JsNode.#setDisplayValue(node, false);
+        JsNode.#setDisplayValue(node, false, effect);
     }
 
     /**
@@ -287,16 +300,29 @@ class JsNode {
     }
 
     // Establece el valor adecuado de display en el nodo
-    static #setDisplayValue(node, isShow) {
+    static #setDisplayValue(node, isShow, effect) {
+        const cs = getComputedStyle(node);
+
         if (isShow) {
+            // La propiedad visibility se compruebaa antes que display, dado
+            // que display puede modificar esta primera
+            if (cs.visibility === 'hidden' || cs.visibility === 'collapse') {
+                node.style.visibilityComputed = cs.visibility;
+                node.style.visibility = 'visible';
+            }      
+
             // Selecciona el display en función del computado o
             // del nombre de la etiqueta
             node.style.display = node.style.displayComputed ||
-                JsNode.#getDisplayValue(node.tagName);
+                JsNode.#getDisplayValue(node.tagName);                               
         } else {
             // Guarda el valor del display computado actual
-            node.style.displayComputed = getComputedStyle(node).display;
-            node.style.display = 'none';
+            node.style.displayComputed = cs.display;
+            if (effect === 'opacity') {            
+                node.style.visibility = node.style.visibilityComputed ?? 'hidden';
+            } else {
+                node.style.display = 'none';
+            }
         }
     }
 
@@ -2050,7 +2076,7 @@ class JsNode {
             } else {
                 this.#nodes.forEach((node, index) => {
                     if (!this.visible(index)) {
-                        JsNode.#setDisplayValue(node, true);
+                        JsNode.#setDisplayValue(node, true, effect);
                     }
                 });
 
@@ -2123,7 +2149,7 @@ class JsNode {
             } else {
                 this.#nodes.forEach((node, index) => {
                     if (this.visible(index)) {
-                        JsNode.#setDisplayValue(node, false);
+                        JsNode.#setDisplayValue(node, false, effect);
                     }
                 });
 
@@ -2193,7 +2219,7 @@ class JsNode {
                 JsNode.#queue.push(JsNode.#wrapFunction(this.toggle, this, [duration, delay, effect, callback]));
             } else {
                 this.#nodes.forEach((node, index) => {
-                    JsNode.#setDisplayValue(node, !this.visible(index));
+                    JsNode.#setDisplayValue(node, !this.visible(index), effect);
                 });
 
                 // Si hay llamadas en cola, llama a la primera
@@ -2624,7 +2650,7 @@ class JsNode {
         if (node) {
             const cs = getComputedStyle(node);
 
-            return cs.display !== 'none' && cs.visibility !== 'hidden';
+            return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.visibility !== 'collapse';
         } else {
             return undefined;
         }
