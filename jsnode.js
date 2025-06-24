@@ -36,14 +36,36 @@ class JsNode {
     #nodes;
 
     /**
-     * Crea un nuevo JsNode.         
-     * @param {Array} nodes Un Array de nodos del DOM.
+     * Crea u nuevo JsNode a partir de un selector CSS, un elemento HTML, una
+     * lista de elementos HTML, un array o un objeto JsNode. Si no se pasa ningún
+     * selector, se intancia con una selección vacía.
+     * @param {string|HTMLElement|NodeList|Array|JsNode|undefined} selector Selector CSS
+     * válido, un elemento HTML, una lista de elementos HTML, un array, un
+     * objeto JsNode o ningún argumento.
+     * @returns Un objeto JsNode con la selección.
      */
-    constructor(nodes = []) {
-        if (!(nodes instanceof Array)) {
-            nodes = [nodes];
-        }
-        this.#nodes = nodes;
+    constructor(selector = undefined) {
+        try {
+            if (typeof (selector) === 'string') {
+                this.#nodes = Array.from(document.querySelectorAll(selector));
+            } else if (selector instanceof HTMLElement) {
+                this.#nodes = [selector];
+            } else if (selector instanceof NodeList) {
+                this.#nodes = Array.from(selector);
+            } else if (selector instanceof Array) {
+                this.#nodes = selector;
+            } else if (selector instanceof JsNode) {
+                this.#nodes = selector.nodes;
+            } else if (selector === undefined) {
+                this.#nodes = [];
+            } else {
+                throw new TypeError(`Selector no válido: ${selector}`);
+            }
+        } catch (error) {
+            this.#nodes = [];
+            console.error(error);
+            console.info('Se continúa sin nodos seleccionados');
+        }                
     }
 
     static #removeListeners(node, eventName) {
@@ -336,9 +358,9 @@ class JsNode {
         return new Promise((resolve, reject) => {
             try {
                 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                    resolve(new JsNode());
+                    resolve();
                 } else {
-                    document.addEventListener('DOMContentLoaded', () => resolve(new JsNode()));
+                    document.addEventListener('DOMContentLoaded', () => resolve());
                 }
             } catch (error) {
                 reject(error);
@@ -447,31 +469,12 @@ class JsNode {
     /**
      * Selecciona elementos HTML en función de un selector CSS. También puede
      * crearse la selección con un elemento HTML, una lista de elementos HTML
-     * o un objeto JsNode.
+     * un array o un objeto JsNode.
      * @param {string|HTMLElement|NodeList|Array|JsNode} selector Selector CSS Válido.
      * @returns Un objeto JsNode con la selección.
      */
     static select(selector) {
-        let nodes;
-        try {
-            if (typeof (selector) === 'string') {
-                nodes = Array.from(document.querySelectorAll(selector));
-            } else if (selector instanceof HTMLElement) {
-                nodes = selector;
-            } else if (selector instanceof NodeList) {
-                nodes = Array.from(selector);
-            } else if (selector instanceof Array) {
-                nodes = selector;
-            } else if (selector instanceof JsNode) {
-                nodes = selector.nodes;
-            }
-        } catch (error) {
-            nodes = [];
-            console.error(error);
-            console.info('Se continúa sin nodos seleccionados');
-        }
-
-        return new JsNode(nodes);
+        return new JsNode(selector);
     }
 
     /**
@@ -1969,7 +1972,7 @@ class JsNode {
     }
 
     // Procesa la finalización de la animación mediante promesas
-    #animationPromisesResolve(callback, resolve) {    
+    #animationPromisesResolve(callback, resolve) {
         // Borra indicadores de animación
         this.#nodes.forEach(node => delete node.isAnimating);
 
@@ -2036,7 +2039,7 @@ class JsNode {
                         }
                     });
                     Promise.all(promises).then(() => {
-                        this.#animationPromisesResolve(callback, resolve);                        
+                        this.#animationPromisesResolve(callback, resolve);
                     });
                 });
             }
@@ -2109,7 +2112,7 @@ class JsNode {
                         }
                     });
                     Promise.all(promises).then(() => {
-                        this.#animationPromisesResolve(callback, resolve);                        
+                        this.#animationPromisesResolve(callback, resolve);
                     });
                 });
             }
