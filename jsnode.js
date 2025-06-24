@@ -171,9 +171,8 @@ class JsNode {
         const cs = JsNode.#buildCssComputed(node);
         let width, height, opacity, widthPart, heightPart, opacityPart;
 
-        // Si el display es inline, o la visibilidad es una de
-        // (hidden, collapse), el efecto solo puede ser opacity
-        if (cs.display === 'inline' || cs.visibility === 'hidden' || cs.visibility === 'collapse') {
+        // Si el display es inline el efecto solo puede ser opacity
+        if (cs.display === 'inline') {
             effect = 'opacity';
         }
 
@@ -280,9 +279,10 @@ class JsNode {
         }
 
         // Restauramos el CSS computado antes de ocultar el nodo
-        Object.assign(node.style, cs);
+        Object.assign(node.style, cs);        
+
         // Finalmente se oculta el elemento
-        JsNode.#setDisplayValue(node, false, effect);
+        JsNode.#setDisplayValue(node, false, effect, true);
     }
 
     /**
@@ -300,7 +300,7 @@ class JsNode {
     }
 
     // Establece el valor adecuado de display en el nodo
-    static #setDisplayValue(node, isShow, effect) {
+    static #setDisplayValue(node, isShow, effect, isAnimation = false) {
         const cs = getComputedStyle(node);
 
         if (isShow) {
@@ -318,7 +318,7 @@ class JsNode {
         } else {
             // Guarda el valor del display computado actual
             node.style.displayComputed = cs.display;
-            if (effect === 'opacity' || node.style.visibilityComputed) {            
+            if (effect === 'opacity' || (!isAnimation && node.style.visibilityComputed)) {
                 node.style.visibility = node.style.visibilityComputed ?? 'hidden';
             } else {
                 node.style.display = 'none';
