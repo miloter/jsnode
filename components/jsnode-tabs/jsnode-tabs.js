@@ -12,9 +12,10 @@ class JsNodeTabs extends JsNode {
         super(selector).addClass(JsNodeTabs.#styleUid);
         this.#options = {
             tabs: [
-
+                { id: 'tab1', text: 'Hola Mundo', content: '<h1>Hola JsNode</h1>'}
             ],
-            activeTabId: undefined
+            activeTabId: 'tab1',
+            onActiveTab: undefined
         };
         this.#updateAll(options);
     }
@@ -24,6 +25,9 @@ class JsNodeTabs extends JsNode {
 
         // Inyectamos la plantilla en la selección actual
         this.html(JsNodeTabs.#template);
+
+        // Actualiza los estilos
+        this.#updateStyles();
 
         // Construimos el componente
         const tabLinks = this.select('.tab-links');
@@ -45,28 +49,40 @@ class JsNodeTabs extends JsNode {
         }
 
         // Establece la ficha activa
-        tabLinks.select(`a[href="#${this.#options.activeTabId}"]`)
-            .parent('li').addClass('active');
-        tabContent.select(`#${this.#options.activeTabId}`).addClass('active');
+        if (this.#options.activeTabId) {
+            tabLinks.select(`a[href="#${this.#options.activeTabId}"]`)
+                .parent('li').addClass('active');            
+            
+            // Comunica el cambio de pestaña
+            if (onActiveTab) onActiveTab(this.#options.activeTabId);
+
+            // Muestra la pestaña
+            tabContent.select(`#${this.#options.activeTabId}`).show();
+        }
 
         // Evento para controlar la selección de ficha
         this.select(`.tab-links a`).on('click', function (event) {
             const section = this.attr('href');
 
-            // Agrega la clase 'active' en la pestaña actual y la elimina
-            // de la pestaña activa previa
+            // Agrega la clase 'active' en el link actual y la elimina
+            // del link activo previo
             this.parent('li').addClass('active').siblings().removeClass('active');
 
-            // Muestra/Oculta pestañas (this referencia a la etiqueta <a>)
-            this.parents('ul', `.${JsNodeTabs.#styleUid}`).next().select(`${section}`)
-                .show(400, 0, 'height').siblings().hide();            
+            // Muestra/Oculta pestañas (this referencia a la etiqueta <a>) y
+            // tab a la nueva pestaña que debe visualizarse
+            const tab = this.parents('ul', `.${JsNodeTabs.#styleUid}`).next().select(`${section}`);
+            // Oculta las pestañas
+            tab.siblings().hide();
+            
+            // Comunica el cambio de pestaña
+            if (onActiveTab) onActiveTab(section.substring(1));
+
+            // Muestra la pestaña seleccionada con una animación
+            tab.show(800, 0, 'opacity');                      
 
             // Previene la navegación de enlaces
             event.preventDefault();
-        });
-
-        // Actualiza los estilos
-        this.#updateStyles();
+        });        
     }
 
     #updateStyles() {
@@ -122,11 +138,7 @@ class JsNodeTabs extends JsNode {
 
                     .${JsNodeTabs.#styleUid} .tab {
                         display: none;
-                    }
-
-                    .${JsNodeTabs.#styleUid} .tab.active {
-                        display: block;
-                    }
+                    }                    
                 </style>
             `);
         }

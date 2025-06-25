@@ -1,3 +1,5 @@
+'use strict';
+
 // Por si se desea usar el símbolo $. Se usa <var> para poder
 // ser compatible con librerías que usen dicho símbolo.
 var $, $$;
@@ -434,7 +436,7 @@ class JsNode {
 
         async function _load(libs) {
             // Admite una librería individual en forma de ruta de cadena o envuelta en un objeto
-            if (typeof (libs) === 'string' || typeof (libs) === 'object') {
+            if (typeof (libs) === 'string' || JsNode.getTypeName(libs) === 'Object') {
                 libs = [libs];
             }
 
