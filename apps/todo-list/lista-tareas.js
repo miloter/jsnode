@@ -1,3 +1,12 @@
+/**
+ * @summary Aplicación de ejemplo para usar JsNode y los componentes
+ * desarrollados a partir del mismo.
+ * @copyright miloter
+ * @license MIT
+ * @since 2025-06-27
+ * @version 0.3.0 2025-06-27
+ */
+
 'use strict';
 
 JsNode.use$();
