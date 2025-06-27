@@ -24,17 +24,15 @@
     background-color: green;    
 }
 
+.btn-warning {
+    background-color: orange;    
+}
+
+.btn-danger {
+    background-color: red;    
+}
+
 .btn:hover {
     opacity: 0.85;
     cursor: pointer;
-}
-
-#listTodos {        
-    list-style: none;
-    max-height: 60vh;
-    overflow: auto;    
-}
-
-#listTodos li {
-    padding: 0.25rem;
 }

@@ -168,9 +168,16 @@ class JsNode {
         return { display, width, height, opacity, overflow, visibility };
     }
 
+    static #getCssNode(node) {
+        const { width, height, opacity, overflow } = node.style;
+
+        return { width, height, opacity, overflow };
+    }
+
     static async #showAnimateNode(node, ms, effect) {
         const msPart = ms / JsNode.#fpa; // Milisegundos por animación        
         const cs = JsNode.#buildCssComputed(node);
+        const style = JsNode.#getCssNode(node);
         let width, height, opacity, widthPart, heightPart, opacityPart;
 
         // Si el display es inline el efecto solo puede ser opacity
@@ -229,13 +236,14 @@ class JsNode {
             ms -= msPart;
         }
 
-        // Ajusta el css del nodo al computado        
-        Object.assign(node.style, cs);
+        // Ajusta el css del nodo al original
+        Object.assign(node.style, style);
     }
 
     static async #hideAnimateNode(node, ms, effect) {
         const msPart = ms / JsNode.#fpa; // Milisegundos por animación                
         const cs = JsNode.#buildCssComputed(node);
+        const style = JsNode.#getCssNode(node);
         let width, height, opacity, widthPart, heightPart, opacityPart;
 
         // Si el display es inline, el efecto solo puede ser opacity
@@ -280,8 +288,8 @@ class JsNode {
             ms -= msPart;
         }
 
-        // Restauramos el CSS computado antes de ocultar el nodo
-        Object.assign(node.style, cs);
+        // Restauramos el CSS original del elemento
+        Object.assign(node.style, style);
 
         // Finalmente se oculta el elemento
         JsNode.#setDisplayValue(node, false, effect, true);
@@ -2058,6 +2066,32 @@ class JsNode {
         this.#updateDisplayAndVisibility();
 
         return this;
+    }
+
+    /**
+     * Devuelve un valor que indica si un elemento de la selección
+     * posee la clase o clases pasadas como argumento.    
+     * @param {string} className La clase o clases que se desea comprobar.
+     * Si hay más de una clase se separarán por un espacio.
+     * @returns {JsNode}
+     */
+    hasClass(className) {
+        const classes = className.trim().split(/\s+/);
+
+        for (const node of this.#nodes) {
+            let contains = true;
+
+            for (const clazz of classes) {
+                if (!node.classList.contains(clazz)) {
+                    contains = false;
+                    break;
+                }
+            }
+
+            if (contains) return true;
+        }
+        
+        return false;
     }
 
     /**

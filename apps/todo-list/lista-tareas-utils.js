@@ -1,3 +1,5 @@
+'use strict';
+
 // Para mostrar mensajes
 function showMessage(text, type) {
     $('#msg').css({
@@ -19,7 +21,7 @@ function showMessage(text, type) {
         ),
         fontSize: '1.10rem',
         fontWeight: 'bold'
-    }).hide().text(text).show(600, 0, 'opacity', function () {
+    }).hide().text(text).show(0, 0, 'opacity', function () {
         this.hide(600, 3000, 'opacity');
     });
 

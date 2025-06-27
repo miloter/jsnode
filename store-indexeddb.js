@@ -6,13 +6,12 @@
  * @copyright miloter
  * @license MIT
  * @since 2023-05-11
- * @version 1.0.0 2025-06-25
+ * @version 1.1.0 2025-06-27
  */
 class StoreIndexedDB {
     static #version = 101;
     #storeName;
-    #db;
-    #nextId;
+    #db;    
 
     /**
      * Crea una nueva instancia de la clase con un nombre de almacen opcional.
@@ -20,8 +19,7 @@ class StoreIndexedDB {
      */
     constructor(storeName = 'test_store') {
         this.#storeName = storeName;
-        this.#db = null;
-        this.#nextId = 1;
+        this.#db = null;        
     }
 
     /**
@@ -170,14 +168,7 @@ class StoreIndexedDB {
     get name() {
         return this.#db.name;
     }
-
-    /**
-     * Devuelve el siguiente ID numérico comenzando en 1.
-     */
-    get nextId() {
-        return this.#nextId++;
-    }
-
+    
     /**
      * Devuelve una referencia a este almacen.
      * @returns {IDBObjectStore}

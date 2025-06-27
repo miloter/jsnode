@@ -1,3 +1,10 @@
+/**
+ * @summary Datatable sencillo que se ejecuta sobre JsNode.
+ * @copyright miloter
+ * @license MIT
+ * @since 2025-05-07
+ * @version 0.3.0 2025-06-27
+ */
 class JsNodeDataTable {
     static #styleUid = 'data-' + crypto.randomUUID();
     static #template = /*html*/`                
@@ -168,12 +175,24 @@ class JsNodeDataTable {
         const html = ['<tr>']
         this.#keys = [];
         for (const col of this.#options.columns) {
-            this.#keys.push(col.key);
+            let inputFilter;
+
+            this.#keys.push(col.key);            
+
+            // Solo hay filtrado y ordenación si la propiedad inputFilterSize
+            // se ha suministrado y el valor del tamaño es mayor que 0
+            if (col.inputFilterSize > 0) {
+                inputFilter = /*html*/`
+                    <span class="sort-control" data-key="${col.key}"></span>
+                    <input type="text" size="${col.inputFilterSize}" data-key="${col.key}">
+                    <br>
+                `;
+            } else {
+                inputFilter = '';
+            }
             html.push(/*html*/`
                 <th>
-                    <span class="sort-control" data-key="${col.key}"></span>
-                    <input type="text" size="${col.inputFilterSize ?? 8}" data-key="${col.key}">
-                    <br>
+                    ${inputFilter}                    
                     ${col.text}
                 </th>
             `);
@@ -551,5 +570,60 @@ class JsNodeDataTable {
         }
 
         return sb.join('');
+    }
+
+    /**
+     * Establece un nuevo array de filas en el componente.
+     * @param {Array<Object>} rows Array de objetos, donde
+     * cada objeto contiene los nombres de campo y sus valores.
+     */
+    setRows(rows) {
+        this.#options.rows = rows;
+        this.#currentPage = 1;
+        this.#filteredRowsCacheChanged = true;
+        this.#sortMetaDataCacheChanged = true;
+        this.#updateRows();
+    }
+
+    /**
+     * Agrega una fila al final de la colección.
+     * @param {Object} row 
+     */
+    addRow(row) {
+        this.#options.rows.push(row);
+        this.#filteredRowsCacheChanged = true;
+        this.#sortMetaDataCacheChanged = true;
+        this.#updateRows();
+    }
+
+    /**
+     * Actualiza una fila de la colección.
+     * @param {Object} row 
+     */
+    updateRow(key, value, data) {
+        const row = this.#options.rows.find(r => r[key] === value);
+        
+        Object.assign(row, data);        
+        this.#filteredRowsCacheChanged = true;
+        this.#sortMetaDataCacheChanged = true;
+        this.#updateRows();
+    }
+
+    /**
+     * Elimina una fila de la colección.
+     * @param {string} key Nombre de la clave de búsqueda.
+     * @value {any} Valor de la clave en la fila que se eliminará.
+     */
+    deleteRow(key, value) {
+        this.#options.rows = this.#options.rows.filter(r => r[key] !== value);                
+        this.#el.select('button.filters-unapply').show().click();        
+    }
+    
+    /**
+     * Devuelve el contenido actual de las opciones.
+     * @returns {object}
+     */
+    get options() {
+        return this.#options;
     }
 }

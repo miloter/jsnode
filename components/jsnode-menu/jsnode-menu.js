@@ -1,3 +1,10 @@
+/**
+ * @summary Menú sencillo que se ejecuta sobre JsNode.
+ * @copyright miloter
+ * @license MIT
+ * @since 2025-05-07
+ * @version 0.3.0 2025-06-27
+ */
 class JsNodeMenu {
     static #styleUid = 'data-' + crypto.randomUUID();
 
