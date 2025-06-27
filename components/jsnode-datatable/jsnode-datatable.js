@@ -3,7 +3,7 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-05-07
- * @version 0.3.0 2025-06-27
+ * @version 0.4.0 2025-06-27
  */
 class JsNodeDataTable {
     static #styleUid = 'data-' + crypto.randomUUID();
@@ -45,9 +45,18 @@ class JsNodeDataTable {
     constructor(selector, options = {}) {
         this.#el = JsNode.select(selector).addClass(JsNodeDataTable.#styleUid);
         this.#options = {
-            columns: [],
-            rows: [],
-            maxRowsPerPage: 5,
+            columns: [
+                { key: 'id', text: 'ID', inputFilterSize: 5 },
+                { key: 'title', text: 'Título', inputFilterSize: 8 },
+                { key: 'description', text: 'Descripción', inputFilterSize: 16 },
+                { key: 'actions', text: 'Acciones', noCsv: true },
+            ],
+            rows: [
+                {id: 1, title: 'tarea 1', description: 'tarea número 1', actions: '<button type="button" data-id="1">Eliminar</button>'},
+                {id: 2, title: 'tarea 2', description: 'tarea número 2', actions: '<button type="button" data-id="2">Eliminar</button>'},
+                {id: 3, title: 'tarea 3', description: 'tarea número 3', actions: '<button type="button" data-id="3">Eliminar</button>'}
+            ],
+            maxRowsPerPage: 2,
             maxRowsPerPageList: [2, 5, 10, 20, 50, 100]
         };
         this.#updateAll(options);
@@ -135,7 +144,7 @@ class JsNodeDataTable {
             this.#el.select(`span[data-key="${col.key}"]`)
                 .html(JsNodeDataTable.#iconOrder(col))
                 .off('click').css('cursor', 'pointer')
-                .on('click', function () {                    
+                .on('click', function () {
                     self.#setOrderType(col);
                     self.#updateRows();
                     self.#updateSortingOrFilterStyles();
@@ -177,7 +186,7 @@ class JsNodeDataTable {
         for (const col of this.#options.columns) {
             let inputFilter;
 
-            this.#keys.push(col.key);            
+            this.#keys.push(col.key);
 
             // Solo hay filtrado y ordenación si la propiedad inputFilterSize
             // se ha suministrado y el valor del tamaño es mayor que 0
@@ -345,7 +354,7 @@ class JsNodeDataTable {
             col.orderType = -1;
         } else {
             col.orderType = 0;
-            col.orderPos = 0;            
+            col.orderPos = 0;
         }
         this.#sortMetaDataCacheChanged = true;
 
@@ -379,7 +388,7 @@ class JsNodeDataTable {
         let n = 1;
         for (const order of res) {
             order.orderPos = n;
-            n++;            
+            n++;
         }
 
         return res;
@@ -477,7 +486,7 @@ class JsNodeDataTable {
         }
     }
 
-    #downloadCsv(event) {        
+    #downloadCsv(event) {
         const date = new Date();
         date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
         const filename = 'csv_' + date.toISOString()
@@ -500,7 +509,7 @@ class JsNodeDataTable {
         // Utiliza la técnica de la descarga al hacer click
         JsNode.select('body').append(`
             <a href="${URL.createObjectURL(blob)}" download="${filename}"></a>
-        `).children('a').one(-1).click().remove();        
+        `).children('a').one(-1).click().remove();
     }
 
     /**
@@ -541,6 +550,8 @@ class JsNodeDataTable {
 
         // Cabeceras del CSV            
         for (let i = 0; i < columns.length; i++) {
+            if (columns[i].noCsv) continue;
+
             const value = columns[i].text;
 
             writeValue(sb, value);
@@ -556,6 +567,8 @@ class JsNodeDataTable {
         let nRows = 0;
         for (const row of this.#orderedRows) {
             for (let i = 0; i < columns.length; i++) {
+                if (columns[i].noCsv) continue;
+
                 const value = String(row[columns[i].key] ?? '');
 
                 writeValue(sb, value);
@@ -602,8 +615,8 @@ class JsNodeDataTable {
      */
     updateRow(key, value, data) {
         const row = this.#options.rows.find(r => r[key] === value);
-        
-        Object.assign(row, data);        
+
+        Object.assign(row, data);
         this.#filteredRowsCacheChanged = true;
         this.#sortMetaDataCacheChanged = true;
         this.#updateRows();
@@ -615,10 +628,10 @@ class JsNodeDataTable {
      * @value {any} Valor de la clave en la fila que se eliminará.
      */
     deleteRow(key, value) {
-        this.#options.rows = this.#options.rows.filter(r => r[key] !== value);                
-        this.#el.select('button.filters-unapply').show().click();        
+        this.#options.rows = this.#options.rows.filter(r => r[key] !== value);
+        this.#el.select('button.filters-unapply').show().click();
     }
-    
+
     /**
      * Devuelve el contenido actual de las opciones.
      * @returns {object}

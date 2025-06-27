@@ -88,7 +88,7 @@ function instanceComponents() {
             { key: 'id', text: 'ID', inputFilterSize: 5 },
             { key: 'title', text: 'Título', inputFilterSize: 8 },
             { key: 'description', text: 'Descripción', inputFilterSize: 16 },
-            { key: 'actions', text: 'Acciones' },
+            { key: 'actions', text: 'Acciones', noCsv: true },
         ],
         rows: [],
         maxRowsPerPage: 10,
