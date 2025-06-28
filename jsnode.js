@@ -38,26 +38,26 @@ class JsNode {
     #nodes;
 
     /**
-     * Crea u nuevo JsNode a partir de un selector CSS, un elemento HTML, una
-     * lista de elementos HTML, un array o un objeto JsNode. Si no se pasa ningún
-     * selector, se intancia con una selección vacía.
-     * @param {string|HTMLElement|NodeList|Array|JsNode|undefined} selector Selector CSS
-     * válido, un elemento HTML, una lista de elementos HTML, un array, un
-     * objeto JsNode o ningún argumento.
+     * Crea u nuevo JsNode a partir de un selector CSS, un objeto Document, un
+     * elemento HTML, un objeto NodeList, un array de elementos HHTML o un objeto
+     * JsNode. Si no se pasa ningún selector, se intancia con una selección vacía.
+     * @param {string|Document|HTMLElement|NodeList|Array|JsNode|undefined} selector Selector CSS
+     * válido, el documento, un elemento HTML, una lista de elementos HTML, un
+     * array, un objeto JsNode o ningún argumento.
      * @returns Un objeto JsNode con la selección.
      */
     constructor(selector = undefined) {
         try {
             if (typeof (selector) === 'string') {
                 this.#nodes = Array.from(document.querySelectorAll(selector));
-            } else if (selector instanceof HTMLElement) {
+            } else if (selector instanceof Document || selector instanceof HTMLElement) {
                 this.#nodes = [selector];
             } else if (selector instanceof NodeList) {
                 this.#nodes = Array.from(selector);
             } else if (selector instanceof Array) {
                 this.#nodes = selector;
             } else if (selector instanceof JsNode) {
-                this.#nodes = selector.nodes;
+                this.#nodes = selector.nodes;               
             } else if (selector === undefined) {
                 this.#nodes = [];
             } else {
@@ -515,9 +515,9 @@ class JsNode {
 
     /**
      * Selecciona elementos HTML en función de un selector CSS. También puede
-     * crearse la selección con un elemento HTML, una lista de elementos HTML
-     * un array o un objeto JsNode.
-     * @param {string|HTMLElement|NodeList|Array|JsNode} selector Selector CSS Válido.
+     * crearse la selección con un objeto Document, un elemento HTML, un objeto
+     * NodeList, un array de elementos HTML o un objeto JsNode.
+     * @param {string|Document|HTMLElement|NodeList|Array|JsNode} selector Selector CSS Válido.
      * @returns Un objeto JsNode con la selección.
      */
     static select(selector) {
@@ -2396,7 +2396,7 @@ class JsNode {
      * de JsNode donde se haya producido el evento.
      * @returns {JsNode} Una instancia JsNode con la selección actual.
      */
-    on(eventName, callback) {
+    on(eventName, callback, once = false) {
         for (const node of this.#nodes) {
             if (!node.listeners) {
                 node.listeners = {};

@@ -12,8 +12,8 @@
         JsNode.domLoaded().then(() => {
             const t1 = new JsNodeDataTable('#t1', {
                 columns: [
-                    { key: 'name', text: 'Nombre', inputFilterSize: 7 },
-                    { key: 'age', text: 'Edad', inputFilterSize: 3 },
+                    { key: 'name', text: 'Nombre', inputFilterSize: 0, noVisible: true },
+                    { key: 'age', text: 'Edad', inputFilterSize: 0, noVisible: true },
                 ],
                 rows: [
                     { name: 'Marco', age: 54 },
@@ -26,13 +26,13 @@
                 ],
                 maxRowsPerPage: 5,
                 maxRowsPerPageList: [2, 5, 10, 20],
-            });
+            });            
         });
     </script>
 </head>
 
 <body>
-    <div id="t1"></div>
+    <div id="t1"></div>    
 </body>
 
 </html>

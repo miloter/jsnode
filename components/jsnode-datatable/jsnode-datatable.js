@@ -16,6 +16,18 @@ class JsNodeDataTable {
                 &#x1F704;
             </button>
             <a href="#" class="csv-export" title="Exporta el filtrado actual a un archivo CSV">CSV</a>
+            <div class="columns-multiselect">                        
+                <button type="button" class="toggle-columns-multiselect">
+                    Mostrar/ocultar columnas
+                </button>                            
+                <div class="columns-multiselect-checkboxes">
+                    <label class="columns-multiselect-label-main">
+                        <input type="checkbox" class="chk-main">
+                        - Todas Visibles -
+                    </label>
+                    <div class="columns-multiselect-labels"></div>
+                </div>
+            </div>
         </div>
         <table>
             <thead></thead>
@@ -41,6 +53,7 @@ class JsNodeDataTable {
     #filteredRowsCacheChanged;
     #sortMetaDataCache;
     #sortMetaDataCacheChanged;
+    #classUid;
 
     constructor(selector, options = {}) {
         this.#el = JsNode.select(selector).addClass(JsNodeDataTable.#styleUid);
@@ -52,17 +65,21 @@ class JsNodeDataTable {
                 { key: 'actions', text: 'Acciones', noCsv: true },
             ],
             rows: [
-                {id: 1, title: 'tarea 1', description: 'tarea número 1', actions: '<button type="button" data-id="1">Eliminar</button>'},
-                {id: 2, title: 'tarea 2', description: 'tarea número 2', actions: '<button type="button" data-id="2">Eliminar</button>'},
-                {id: 3, title: 'tarea 3', description: 'tarea número 3', actions: '<button type="button" data-id="3">Eliminar</button>'}
+                { id: 1, title: 'tarea 1', description: 'tarea número 1', actions: '<button type="button" data-id="1">Eliminar</button>' },
+                { id: 2, title: 'tarea 2', description: 'tarea número 2', actions: '<button type="button" data-id="2">Eliminar</button>' },
+                { id: 3, title: 'tarea 3', description: 'tarea número 3', actions: '<button type="button" data-id="3">Eliminar</button>' }
             ],
             maxRowsPerPage: 2,
             maxRowsPerPageList: [2, 5, 10, 20, 50, 100]
         };
-        this.#updateAll(options);
+        this.#classUid = 'class-' + crypto.randomUUID();
+        this.#initialize(options);
     }
 
-    #updateAll(options = {}) {
+    #initialize(options = {}) {
+        // Para las funciones que tienen su propio this
+        const self = this;
+
         this.#currentPage = 1;
         this.#options = Object.assign(this.#options, options);
         this.#filteredRowsCacheChanged = true;
@@ -71,53 +88,125 @@ class JsNodeDataTable {
         // Inyecta la plantila
         this.#el.html(JsNodeDataTable.#template);
 
-        const self = this;
 
-        // SELECT máximo de filas visibles por página
+        // <select> máximo de filas visibles por página
         const select = this.#el.select('select').html('');
         for (const n of this.#options.maxRowsPerPageList) {
             select.append(`<option value="${n}">${n}</option>`);
         }
-        select.val(this.#options.maxRowsPerPage).off('change').on('change', function () {
+        select.val(this.#options.maxRowsPerPage).on('change', function () {
             self.#currentPage = 1;
             self.#options.maxRowsPerPage = parseInt(this.val());
             self.#updateRows();
         });
 
-        // BUTTON desaplicar filtros
-        this.#el.select('button.filters-unapply').hide()
-            .off('click').on('click', function () {
-                for (const col of self.#options.columns) {
-                    col.orderType = 0;
-                    col.orderPos = 0;
-                    col.filter = 0;
-                }
-                self.#currentPage = 1;
-                self.#filteredRowsCacheChanged = true;
-                self.#sortMetaDataCacheChanged = true;
-                self.#updateHeader();
-                self.#updateRows();
-                this.hide();
-            });
-
-        // A enlace de descarga del CSV ordenado y/o filtrado
-        this.#el.select('a.csv-export').off('click').on('click', function (event) {
+        // <a> enlace de descarga del CSV ordenado y/o filtrado
+        this.#el.select('a.csv-export').on('click', function (event) {
             event.preventDefault();
             self.#downloadCsv();
         });
 
+        // <div.columns-multiselect>: Si se pulsa ESC se oculta la lista de
+        // los checkboxes de selección de columnas
+        this.#el.select('div.columns-multiselect').on('keyup', function (event) {
+            if (event.key === 'Escape') {
+                this.select('div.columns-multiselect-checkboxes').hide();
+            }
+        })
+            // Se le agrega además una clase única para esta instancia para diferenciarlo de las demás
+            .addClass(this.#classUid);
+        
+            // <button.toggle-columns-multiselect>: alterna la visualización de
+        // los checboxes de selección de columnas
+        this.#el.select('button.toggle-columns-multiselect').on('click', function () {
+            // .next() => <div.columns-multiselect-checkboxes>
+            this.next().toggle();
+        }).click(); // Inicialmente oculto    
+        
+        // <document>: si se pulsa click con la selección de columnas abiertas
+        // se cierran
+        JsNode.select(document).on('click', event => {
+            const checkboxesList = this.#el.select('div.columns-multiselect-checkboxes');
+
+            // Si no está abierto no hace nada
+            if (!checkboxesList.visible()) return;
+
+            // La técnica consiste en saber si donde estamos haciendo click es
+            // en el propio elemento, con lo que el lugar del click estaría
+            // contenido por el elemento <div.columns-multiselect.<uid>>, o bien no
+            // está contenido y por tanto deber cerrarse la lista de selección
+            // de columnas
+            if (!JsNode.select(event.target).parents(
+                `div.columns-multiselect.${this.#classUid}`).length) {
+                checkboxesList.hide();
+            }
+        });
+        
+        // <div class="columns-multiselect-labels">: las columnas que se pueden
+        // visualizar/ocultar
+        const cml = this.#el.select('div.columns-multiselect-labels');        
+        for (let i = 0; i < this.#options.columns.length; i++) {
+            const col = this.#options.columns[i];            
+            cml.append(/*html*/`
+                <label>
+                    <input type="checkbox"${col.noVisible ? '' : ' checked'}
+                        data-col-index="${i}">
+                    ${col.text}
+                </label>
+            `);
+        }        
+        
+        // Creamos un evento para poner o quitar la selección de cada una
+        cml.select('[type="checkbox"]').on('change', function() {
+            self.#options.columns[this.prop('dataset').colIndex].noVisible = !this.prop('checked');
+            self.#updateHeader();
+            self.#updateRows();
+
+            // Actualizamos el selector de mostrar/ocultar todas
+            self.#el.select('.chk-main').prop('checked', !self.#options.columns.some(c => c.noVisible));
+        });
+        
+        // Creamos un evento para poner o quitar la selección de todas
+        this.#el.select('.chk-main').on('change', function () {
+            const checked = this.prop('checked');
+
+            for (const col of self.#options.columns) {
+                col.noVisible = !checked;
+            }
+            cml.select('[type="checkbox"]').prop('checked', checked);
+            self.#updateHeader();
+            self.#updateRows();
+        });
+        // Inicialmente su valor depende de lo selecionado
+        this.#el.select('.chk-main').prop('checked', !this.#options.columns.some(c => c.noVisible));
+
+        // <button.filters-unapply>: desaplicar filtros
+        this.#el.select('button.filters-unapply').hide().on('click', function () {
+            for (const col of self.#options.columns) {
+                col.orderType = 0;
+                col.orderPos = 0;
+                col.filter = 0;
+            }
+            self.#currentPage = 1;
+            self.#filteredRowsCacheChanged = true;
+            self.#sortMetaDataCacheChanged = true;
+            self.#updateHeader();
+            self.#updateRows();
+            this.hide();
+        });
+
         // INPUT/number de páginas
-        this.#el.select('[type="number"').off('change').on('change', function () {
+        this.#el.select('[type="number"').on('change', function () {
             self.#currentPage = parseInt(this.val());
             self.#updateRows();
         });
 
         // Botones adelante atrás
-        this.#el.select('button').filterText('Ant.').off('click').on('click', function () {
+        this.#el.select('button').filterText('Ant.').on('click', function () {
             self.#currentPage--;
             self.#updateRows();
         });
-        this.#el.select('button').filterText('Sig.').off('click').on('click', function () {
+        this.#el.select('button').filterText('Sig.').on('click', function () {
             self.#currentPage++;
             self.#updateRows();
         });
@@ -137,13 +226,15 @@ class JsNodeDataTable {
         // Actualiza los eventos de la ordenación y los filtros
         const self = this;
         for (const col of this.#options.columns) {
+            if (col.noVisible) continue;
+
             col.filter = '';
             col.orderType = 0;
             col.orderPos = 0;
 
             this.#el.select(`span[data-key="${col.key}"]`)
                 .html(JsNodeDataTable.#iconOrder(col))
-                .off('click').css('cursor', 'pointer')
+                .css('cursor', 'pointer')
                 .on('click', function () {
                     self.#setOrderType(col);
                     self.#updateRows();
@@ -151,7 +242,7 @@ class JsNodeDataTable {
                 });
 
             this.#el.select(`input[type="text"][data-key="${col.key}"]`)
-                .off('input').on('input', function () {
+                .on('input', function () {
                     col.filter = this.val();
                     self.#currentPage = 1;
                     self.#filteredRowsCacheChanged = true;
@@ -184,6 +275,8 @@ class JsNodeDataTable {
         const html = ['<tr>']
         this.#keys = [];
         for (const col of this.#options.columns) {
+            if (col.noVisible) continue;
+
             let inputFilter;
 
             this.#keys.push(col.key);
@@ -288,8 +381,9 @@ class JsNodeDataTable {
                     }
 
                     .${JsNodeDataTable.#styleUid} > div:nth-child(1) {
-                        display: flex;
+                        display: flex;                        
                         justify-content: center;
+                        align-items: center;
                         gap: 1rem;
                         margin-bottom: 0.25rem;
                     }
@@ -330,6 +424,28 @@ class JsNodeDataTable {
 
                     .${JsNodeDataTable.#styleUid} .filters-unapply {
                         background-color: tomato;
+                    }
+
+                    .${JsNodeDataTable.#styleUid} .columns-multiselect {
+                        position: relative;
+                        margin: 0.16rem;
+                    }
+
+                    .${JsNodeDataTable.#styleUid} .columns-multiselect-checkboxes {
+                        position: absolute;
+                        z-index: 1;
+                        background-color: lightgray;
+                        border: 1px solid black;
+                        max-height: ${this.columnsMultiselectMaxHeight}rem;
+                        overflow: auto;
+                    }
+
+                    .${JsNodeDataTable.#styleUid} .columns-multiselect-checkboxes label {
+                        display: block;
+                    }
+
+                    .${JsNodeDataTable.#styleUid} .columns-multiselect-label-main {
+                        background-color: #fff5cc;"
                     }
                 </style>
             `);
@@ -550,7 +666,7 @@ class JsNodeDataTable {
 
         // Cabeceras del CSV            
         for (let i = 0; i < columns.length; i++) {
-            if (columns[i].noCsv) continue;
+            if (columns[i].noVisible) continue;
 
             const value = columns[i].text;
 
@@ -567,7 +683,7 @@ class JsNodeDataTable {
         let nRows = 0;
         for (const row of this.#orderedRows) {
             for (let i = 0; i < columns.length; i++) {
-                if (columns[i].noCsv) continue;
+                if (columns[i].noVisible) continue;
 
                 const value = String(row[columns[i].key] ?? '');
 
