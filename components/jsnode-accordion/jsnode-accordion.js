@@ -3,7 +3,7 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-06-28
- * @version 0.3.0 2025-06-28
+ * @version 0.4.0 2025-06-29
  */
 class JsNodeAccordion extends JsNode {
     static #styleUid = 'data-' + crypto.randomUUID();
@@ -62,9 +62,9 @@ class JsNodeAccordion extends JsNode {
 
             self.#closeSection();
             if (!isActive) {
-                // Add active class to section title
+                // Agrega la clase .active al título
                 this.addClass('active');
-                // Open up the hidden content panel
+                // Muestra el contenido y le agrega la clase .open
                 self.select(`.accordion ${href}`)
                     .show(300, 0, 'height').addClass('open');
             }
