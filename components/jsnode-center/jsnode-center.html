@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desarrollo de componente JsNodeCenter</title>
+    <style>
+        .box {
+            background-color: yellowgreen;
+            width: 300px;
+            height: 300px;
+            line-height: 200px;
+            text-align: center;
+        }
+
+        .link {
+            background-color: goldenrod;
+            padding: 0.5rem;
+        }
+
+        .list {
+            background-color: yellowgreen;
+            border: 3px solid blue;
+            padding: 1rem;
+            margin: 0;
+            list-style: none;            
+        }
+    </style>
+    <script src="../../jsnode.js"></script>
+    <script src="jsnode-center-element.js"></script>
+    <script>
+        JsNode.use$().domLoaded().then(() => {
+            // new JsNodeCenterElement('a, #center', { x: 'left', y: 'top' });
+            // new JsNodeCenterElement('a, #center', { x: 'center', y: 'top' });
+            // new JsNodeCenterElement('a, #center', { x: 'right', y: 'top' });
+            // new JsNodeCenterElement('a, #center', { x: 'left' });
+            new JsNodeCenterElement('a, #center');
+            // new JsNodeCenterElement('a, #center', { x: 'right' });
+            // new JsNodeCenterElement('a, #center', { x: 'left', y: 'bottom' });
+            // new JsNodeCenterElement('a, #center', { x: 'right', y: 'bottom' });
+
+            new JsNodeCenterElement('ul', { x: 'right', y: 'bottom' });
+        });
+    </script>
+</head>
+
+<body>
+    <div id="center" class="box">
+        Hola Mundo
+    </div>
+
+    <a href="#" class="link">Enlace a la nada</a>
+
+    <ul class="list">
+        <li>Uno</li>
+        <li>Dos</li>
+        <li>Tres</li>
+    </ul>
+</body>
+
+</html>

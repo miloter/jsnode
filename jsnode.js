@@ -39,18 +39,21 @@ class JsNode {
 
     /**
      * Crea u nuevo JsNode a partir de un selector CSS, un objeto Document, un
-     * elemento HTML, un objeto NodeList, un array de elementos HHTML o un objeto
-     * JsNode. Si no se pasa ningún selector, se intancia con una selección vacía.
-     * @param {string|Document|HTMLElement|NodeList|Array|JsNode|undefined} selector Selector CSS
-     * válido, el documento, un elemento HTML, una lista de elementos HTML, un
-     * array, un objeto JsNode o ningún argumento.
+     * objeto Windwow, un elemento HTML, un objeto NodeList, un array de
+     * elementos HHTML o un objeto JsNode. Si no se pasa ningún selector, se
+     * intancia con una selección vacía.
+     * @param {string|Document|Window|HTMLElement|NodeList|Array|JsNode|undefined} selector Selector CSS
+     * válido, el documento, la ventana, un elemento HTML, una lista de
+     * elementos HTML, un array, un objeto JsNode o ningún argumento.
      * @returns Un objeto JsNode con la selección.
      */
     constructor(selector = undefined) {
         try {
             if (typeof (selector) === 'string') {
                 this.#nodes = Array.from(document.querySelectorAll(selector));
-            } else if (selector instanceof Document || selector instanceof HTMLElement) {
+            } else if (selector instanceof Document ||
+                    selector instanceof Window ||
+                    selector instanceof HTMLElement) {
                 this.#nodes = [selector];
             } else if (selector instanceof NodeList) {
                 this.#nodes = Array.from(selector);
@@ -515,9 +518,10 @@ class JsNode {
 
     /**
      * Selecciona elementos HTML en función de un selector CSS. También puede
-     * crearse la selección con un objeto Document, un elemento HTML, un objeto
-     * NodeList, un array de elementos HTML o un objeto JsNode.
-     * @param {string|Document|HTMLElement|NodeList|Array|JsNode} selector Selector CSS Válido.
+     * crearse la selección con un objeto Document, un objeto Window, un
+     * elemento HTML, un objeto NodeList, un array de elementos HTML o un
+     * objeto JsNode.
+     * @param {string|Document|Window|HTMLElement|NodeList|Array|JsNode} selector Selector CSS Válido.
      * @returns Un objeto JsNode con la selección.
      */
     static select(selector) {

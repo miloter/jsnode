@@ -31,7 +31,7 @@ class JsNodeAccordion extends JsNode {
     }
 
     #initialize(options = {}) {
-        // Necesario para dentro de las funciones con otro this
+        // Necesario en el interior de las funciones con otro this
         const self = this;
 
         this.#options = Object.assign(this.#options, options);
@@ -81,49 +81,49 @@ class JsNodeAccordion extends JsNode {
 
     #updateStyles() {
         // Le asigna estilos si aun no existen
-        if (!JsNode.select(`head > style[${JsNodeAccordion.#styleUid}]`).length) {
-            JsNode.select('head').append(/*html*/`
-                <style ${JsNodeAccordion.#styleUid}>
-                    .${JsNodeAccordion.#styleUid} .accordion,
-                    .${JsNodeAccordion.#styleUid} .accordion * {
-                        box-sizing: border-box;
-                    }
+        if (JsNode.select(`head > style[${JsNodeAccordion.#styleUid}]`).length) return;
 
-                    .${JsNodeAccordion.#styleUid} .accordion {
-                        overflow: hidden;
-                        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
-                        border-radius: 3px;
-                        background-color: #f7f7f7;
-                    }
+        JsNode.select('head').append(/*html*/`
+            <style ${JsNodeAccordion.#styleUid}>
+                .${JsNodeAccordion.#styleUid} .accordion,
+                .${JsNodeAccordion.#styleUid} .accordion * {
+                    box-sizing: border-box;
+                }
 
-                    .${JsNodeAccordion.#styleUid} .accordion-section-title {
-                        width: 100%;
-                        padding: 15px;
-                        display: inline-block;
-                        border-bottom: 1px solid #1a1a1a;
-                        background-color: #333;
-                        transition: all linear 0.15s;
-                        font-size: 1.200em;
-                        text-shadow: 0px 1px 0px #1a1a1a;
-                        color: #fff;
-                    }
+                .${JsNodeAccordion.#styleUid} .accordion {
+                    overflow: hidden;
+                    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+                    border-radius: 3px;
+                    background-color: #f7f7f7;
+                }
 
-                    .${JsNodeAccordion.#styleUid} .accordion-section-title.active,
-                    .${JsNodeAccordion.#styleUid} .accordion-section-title:hover {
-                        background-color: #4c4c4c;                        
-                        text-decoration: none;
-                    }
+                .${JsNodeAccordion.#styleUid} .accordion-section-title {
+                    width: 100%;
+                    padding: 0.5rem;
+                    display: inline-block;
+                    border-bottom: 1px solid #1a1a1a;
+                    background-color: #333;
+                    transition: all linear 0.15s;
+                    font-size: 1.10rem;
+                    text-shadow: 0px 1px 0px #1a1a1a;
+                    color: #fff;
+                }
 
-                    .${JsNodeAccordion.#styleUid} .accordion-section:last-child .accordion-section-title {
-                        border-bottom: none;
-                    }
+                .${JsNodeAccordion.#styleUid} .accordion-section-title.active,
+                .${JsNodeAccordion.#styleUid} .accordion-section-title:hover {
+                    background-color: #4c4c4c;                        
+                    text-decoration: none;
+                }
 
-                    .${JsNodeAccordion.#styleUid} .accordion-section-content {
-                        padding: 15px;
-                        display: none;
-                    }
-                </style>
-            `);
-        }
+                .${JsNodeAccordion.#styleUid} .accordion-section:last-child .accordion-section-title {
+                    border-bottom: none;
+                }
+
+                .${JsNodeAccordion.#styleUid} .accordion-section-content {
+                    padding: 0.5rem;
+                    display: none;
+                }
+            </style>
+        `);        
     }
 }
