@@ -14,7 +14,8 @@ class JsNodeCenterElement extends JsNode {
         this.#options = {
             x: 'center' /* center|left|right */,
             y: 'center' /* center|top|bottom */,
-            useMargin: true /* La anchura/altura del elemento no incluirá el margen */
+            useMargin: true /* La anchura/altura del elemento no incluirá el margen */,
+            zIndex: 0 /* Indica el z-index del elemento */
         };
 
         this.#initialize(options);
@@ -31,7 +32,8 @@ class JsNodeCenterElement extends JsNode {
     }
 
     #onResize() {
-        const x = this.#options.x, y = this.#options.y, useMargin = this.#options.useMargin;
+        const x = this.#options.x, y = this.#options.y,
+            useMargin = this.#options.useMargin, zIndex = this.#options.zIndex;
 
         this.each(function () {            
             if (this.visible()) {
@@ -55,7 +57,7 @@ class JsNodeCenterElement extends JsNode {
                     top = 0.5 * (window.innerHeight - this.outerHeight(useMargin)) + 'px'
                 }
 
-                this.css({ left, top });
+                this.css({ left, top, zIndex });
             }
         });
     }
