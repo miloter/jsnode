@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desarrollo de componentes cuadro de diálogo</title>
+    <script src="../../jsnode.js"></script>
+    <script src="jsnode-dialog-101.js"></script>
+    <script src="jsnode-dialog-102.js"></script>
+    <script>
+        JsNode.use$().domLoaded().then(() => {
+            const d101 = new JsNodeDialog101('#d101');               
+            const d102 = new JsNodeDialog102('#d102', {
+                title: 'Preparando el entorno',
+                content: 'Cargando todos los componentes, por favor espere, será solo un momento'
+            });
+
+            $('#showModal101').on('click', () => d101.showModal());
+            $('#showModal102').on('click', () => {
+                const maxTime = 23000;
+
+                d102.showModal({ title: `Quedan ${maxTime / 1000} seg` });
+                setTimeout(() => {
+                    d102.close();
+                }, maxTime);
+
+                let ms = 0;
+                const timer = setInterval(() => {
+                    ms += 1000;
+                    d102.updateOptions({ title: `Quedan ${(maxTime - ms) / 1000} seg` })    
+                    if (ms >= maxTime) clearInterval(timer);
+                }, 1000);
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="d101">
+        <button id="showModal101">Mostrar formulario modal</button>
+    </div>    
+    <hr>
+    <div id="d102">
+        <button id="showModal102">Mostrar formulario modal que no se puede cerrar</button>
+    </div>
+</body>
+</html>
