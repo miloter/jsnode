@@ -3,35 +3,83 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-05-07
- * @version 0.3.0 2025-06-27
+ * @version 4.3.0 2025-07-06
  */
-class JsNodeMenu {
-    static #styleUid = 'data-' + crypto.randomUUID();
+class JsNodeMenu extends JsNode {
+    // Para generar un identificador común en todas las instancias, se toman
+    // los últimos 12 caracteres hexadecimales
+    static #uid = 'u' + crypto.randomUUID().substring(24);
+    
+    // Plantilla para el menú
+    static #template = /*html*/`
+        <div class="${this.#uid}-menu"></div>
+    `;    
 
-    #el;
     #options;
 
     constructor(selector, options = {}) {
-        this.#el = JsNode.select(selector).addClass(JsNodeMenu.#styleUid);
+        // this va a referenciar al menú
+        super(JsNode.select(selector).append(JsNodeMenu.#template).children(-1));
         this.#options = {
             menu: /*html*/`
-                
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About Us ></a>
+                        <ul>
+                            <li><a href="#">History</a></li>
+                            <li><a href="#">Team</a></li>
+                            <li><a href="#">Mission</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Services ></a>
+                        <ul>
+                            <li><a href="#">Web Design</a></li>
+                            <li><a href="#">Development</a></li>
+                            <li><a href="#">SEO</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Portfolio</a></li>
+                    <li><a href="#">Contact</a>
+                        <ul>
+                            <li><a href="#">Alicante ></a>
+                                <ul>
+                                    <li><a href="#">Capital</a></li>
+                                    <li><a href="#">Elche</a></li>
+                                    <li><a href="#">Alcoy ></a>
+                                        <ul>
+                                            <li><a href="#">Centro</a></li>
+                                            <li><a href="#">Norte</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="#">Valencia</a></li>
+                            <li><a href="#">Castellón ></a>
+                                <ul>
+                                    <li><a href="#">Norte</a></li>
+                                    <li><a href="#">Centro</a></li>
+                                    <li><a href="#">Sur</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
             `,
             orientation: 'horizontal', // o 'vertical'
         };
         this.#updateAll(options);
     }
 
-    #updateAll(options = {}) {
+    #updateAll(options = {}) {        
         this.#options = Object.assign(this.#options, options);
 
-        // Inyecta el menu
-        this.#el.html(this.#options.menu);
+        // Inyecta el menú
+        this.append(this.#options.menu);
 
         // Ocultar los submenús inicialmente        
-        JsNode.select(`.${JsNodeMenu.#styleUid} ul ul`).hide();            
+        this.select('ul ul').hide();            
 
-        JsNode.select(`.${JsNodeMenu.#styleUid} li`).on('mouseenter', function () {
+        this.select('li').on('mouseenter', function () {
             const ul = this.select('ul').one();
             
             if (!ul.length) return;
@@ -46,38 +94,40 @@ class JsNodeMenu {
     }
 
     #updateStyles() {
+        const uid = JsNodeMenu.#uid;
+
         // Le asigna estilos si aun no existen
-        if (!JsNode.select(`head > style[${JsNodeMenu.#styleUid}]`).length) {
+        if (!JsNode.select(`head > style[${uid}]`).length) {
             JsNode.select('head').append(/*html*/`
-                <style ${JsNodeMenu.#styleUid}>
-                    .${JsNodeMenu.#styleUid} {
+                <style ${uid}>
+                    .${uid}-menu {
                         ${this.#options.orientation === 'horizontal' ? '': 'display: inline-block;'}
                         background-color: #333;
                         color: #fff;
                     }                    
                     
-                    .${JsNodeMenu.#styleUid} ul {
+                    .${uid}-menu ul {
                         list-style: none;
                         padding: 0;
                         margin: 0;
                     }
 
-                    .${JsNodeMenu.#styleUid} li {
+                    .${uid}-menu ul li {
                         display: ${this.#options.orientation === 'horizontal' ? 'inline-block' : 'block'};
                         position: relative;
                         padding: 0.5rem 1rem;
                     }
 
-                    .${JsNodeMenu.#styleUid} ul li a {
+                    .${uid}-menu ul li a {
                         color: white;
                         text-decoration: none;
                     }
 
-                    .${JsNodeMenu.#styleUid} li:hover {
+                    .${uid}-menu ul li:hover {
                         background-color: #555;
                     }                    
 
-                    .${JsNodeMenu.#styleUid} ul ul {
+                    .${uid}-menu ul ul {
                         position: absolute;                        
                         left: ${this.#options.orientation === 'horizontal' ? '0' : '100'}%;                        
                         top: ${this.#options.orientation === 'horizontal' ? '100' : '0'}%;                        
@@ -85,22 +135,22 @@ class JsNodeMenu {
                         z-index: 1;
                     }
 
-                    .${JsNodeMenu.#styleUid} ul ul ul {
+                    .${uid}-menu ul ul ul {
                         left: 100%;
                         top: 0;
                     }
 
-                    .${JsNodeMenu.#styleUid} ul ul li {
+                    .${uid}-menu ul ul li {
                         display: block;
                         min-width: 150px;
                     }
 
-                    .${JsNodeMenu.#styleUid} ul ul li a {                        
+                    .${uid}-menu ul ul li a {                        
                         padding: 10px;
                         display: block;
                     }
 
-                    .${JsNodeMenu.#styleUid} ul ul li:hover {
+                    .${uid}-menu ul ul li:hover {
                         background-color: #666;
                     }                    
                 </style>

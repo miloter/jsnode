@@ -6,16 +6,19 @@
  * @version 0.4.0 2025-06-29
  */
 class JsNodeAccordion extends JsNode {
-    static #styleUid = 'data-' + crypto.randomUUID();
+    // Para generar un identificador común en todas las instancias, se toman
+    // los últimos 12 caracteres hexadecimales
+    static #uid = 'u' + crypto.randomUUID().substring(24);
 
     static #template = /*html*/`                        
-        <div class="accordion"></div>
+        <div class="${this.#uid}-accordion"></div>
     `;
 
     #options;
 
     constructor(selector, options = {}) {
-        super(selector).addClass(JsNodeAccordion.#styleUid);
+        // Hacemos que this se refiera a la raiz del JsNodeAccordion
+        super(JsNode.select(selector).append(JsNodeAccordion.#template).children(-1));
         this.#options = {
             sections: [{
                 id: 'sect1',
@@ -30,43 +33,46 @@ class JsNodeAccordion extends JsNode {
         this.#initialize(options);
     }
 
+    /**
+     * Devuelve el identificador único usado en esta clase.
+     * @returns {string}
+     */
+    static getUid() {
+        return this.#uid;
+    }
+
     #initialize(options = {}) {
         // Necesario en el interior de las funciones con otro this
         const self = this;
+        const uid = JsNodeAccordion.#uid; // Acortamos el nombre
 
-        this.#options = Object.assign(this.#options, options);
-
-        // Inyectamos la plantilla en la selección actual
-        this.html(JsNodeAccordion.#template);
+        this.#options = Object.assign(this.#options, options);        
 
         // Actualiza los estilos
         this.#updateStyles();
-
-        // Padre de las secciones del acordeón
-        const accordion = this.select('.accordion');
+        
 
         for (const section of this.#options.sections) {
-            accordion.append(/*html*/`
-                <div class="accordion-section">
-                    <a class="accordion-section-title" href="#${section.id}">${section.title}</a>
-                    <div id="${section.id}" class="accordion-section-content">${section.content}</div>
+            this.append(/*html*/`
+                <div class="${uid}-accordion-section">
+                    <a class="${uid}-accordion-section-title" href="#${section.id}">${section.title}</a>
+                    <div id="${section.id}" class="${uid}-accordion-section-content">${section.content}</div>
                 </div>
             `);
         }        
 
         // Controlamos cuando se pulsa en una sección del acordeón
-        this.select('.accordion-section-title').on('click', function (event) {
+        this.select(`.${uid}-accordion-section-title`).on('click', function (event) {
             // Obtenemos el ID de la sección del acordeón pulsada
             const href = this.attr('href');
-            const isActive = this.hasClass('active');
+            const isActive = this.hasClass(`${uid}-active`);
 
             self.#closeSection();
             if (!isActive) {
                 // Agrega la clase .active al título
-                this.addClass('active');
+                this.addClass(`${uid}-active`);
                 // Muestra el contenido y le agrega la clase .open
-                self.select(`.accordion ${href}`)
-                    .show(300, 0, 'height').addClass('open');
+                self.select(`${href}`).show(300, 0, 'height').addClass(`${uid}-open`);
             }
 
             event.preventDefault();
@@ -74,30 +80,34 @@ class JsNodeAccordion extends JsNode {
     }
 
     #closeSection() {
-        this.select('.accordion .accordion-section-title').removeClass('active');
-        this.select('.accordion .accordion-section-content')
-            .hide(300, 0, 'height').removeClass('open');
+        const uid = JsNodeAccordion.#uid;
+
+        this.select(`.${uid}-accordion-section-title`).removeClass(`${uid}-active`);
+        this.select(`.${uid}-accordion-section-content`)
+            .hide(300, 0, 'height').removeClass(`${uid}-open`);
     }
 
     #updateStyles() {
+        const uid = JsNodeAccordion.#uid;
+
         // Le asigna estilos si aun no existen
-        if (JsNode.select(`head > style[${JsNodeAccordion.#styleUid}]`).length) return;
+        if (JsNode.select(`head > style[${uid}]`).length) return;
 
         JsNode.select('head').append(/*html*/`
-            <style ${JsNodeAccordion.#styleUid}>
-                .${JsNodeAccordion.#styleUid} .accordion,
-                .${JsNodeAccordion.#styleUid} .accordion * {
+            <style ${uid}>
+                .${uid}-accordion,
+                .${uid}-accordion * {
                     box-sizing: border-box;
                 }
 
-                .${JsNodeAccordion.#styleUid} .accordion {
+                .${uid}-accordion {
                     overflow: hidden;
                     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
                     border-radius: 3px;
                     background-color: #f7f7f7;
                 }
 
-                .${JsNodeAccordion.#styleUid} .accordion-section-title {
+                .${uid}-accordion-section-title {
                     width: 100%;
                     padding: 0.5rem;
                     display: inline-block;
@@ -109,17 +119,17 @@ class JsNodeAccordion extends JsNode {
                     color: #fff;
                 }
 
-                .${JsNodeAccordion.#styleUid} .accordion-section-title.active,
-                .${JsNodeAccordion.#styleUid} .accordion-section-title:hover {
+                .${uid}-active,
+                .${uid}-accordion-section-title:hover {
                     background-color: #4c4c4c;                        
                     text-decoration: none;
                 }
 
-                .${JsNodeAccordion.#styleUid} .accordion-section:last-child .accordion-section-title {
+                .${uid}-accordion-section:last-child .${uid}-accordion-section-title {
                     border-bottom: none;
                 }
 
-                .${JsNodeAccordion.#styleUid} .accordion-section-content {
+                .${uid}-accordion-section-content {
                     padding: 0.5rem;
                     display: none;
                 }

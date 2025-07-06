@@ -10,7 +10,43 @@ class JsNodeDataTable extends JsNode {
     // los últimos 12 caracteres hexadecimales
     static #uid = 'u' + crypto.randomUUID().substring(24);
     // Plantilla que se inyectará en la página
-    static #template = JsNodeDataTable.#buildTemplate();
+    static #template = /*html*/`
+        <div class="${this.#uid}-datatable">
+            <div class="${this.#uid}-datatable-header">        
+                <div>    
+                    Filas/Pág. <select class="${this.#uid}-select-rows-per-page"></select>            
+                </div>
+                <button type="button" class="${this.#uid}-filters-unapply" title="Quita la ordenación y el filtrado">
+                    &#x1F704;
+                </button>
+                <a href="#" class="${this.#uid}-csv-export" title="Exporta el filtrado actual a un archivo CSV">CSV</a>
+                <div class="${this.#uid}-columns-multiselect">                        
+                    <button type="button" class="${this.#uid}-toggle-columns-multiselect">
+                        Mostrar/ocultar columnas
+                    </button>                            
+                    <div class="${this.#uid}-columns-multiselect-checkboxes">
+                        <label class="${this.#uid}-columns-multiselect-label-main">
+                            <input type="checkbox" class="${this.#uid}-chk-main">
+                            - Todas Visibles -
+                        </label>
+                        <div class="${this.#uid}-columns-multiselect-labels"></div>
+                    </div>
+                </div>
+            </div>
+            <table class="${this.#uid}-datatable-table">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+            <div class="${this.#uid}-datatable-footer">                        
+                <button class="${this.#uid}-previous-page">Ant.</button>
+                &nbsp;
+                Página <input type="number" class="${this.#uid}-current-page"
+                    min = "1" max="1" value="1" length="4"> de <span>101</span>
+                &nbsp;
+                <button class="${this.#uid}-next-page">Sig.</button>            
+            </div>       
+        </div>
+    `;
     // Ayuda para el manejo de fechas
     static #reGroupedDateString = /^(\d{2})(?:\/|-)(\d{2})(?:\/|-)(\d{4})$/;
 
@@ -51,50 +87,6 @@ class JsNodeDataTable extends JsNode {
         };
         this.#classUid = 'c' + crypto.randomUUID().substring(24);
         this.#initialize(options);
-    }
-
-    // Contruye la plantilla
-    static #buildTemplate() {
-        // Para acortar los nombres        
-        const uid = JsNodeDataTable.#uid;
-
-        return /*html*/`            
-            <div class="${uid}-datatable">
-                <div class="${uid}-datatable-header">        
-                    <div>    
-                        Filas/Pág. <select class="${uid}-select-rows-per-page"></select>            
-                    </div>
-                    <button type="button" class="${uid}-filters-unapply" title="Quita la ordenación y el filtrado">
-                        &#x1F704;
-                    </button>
-                    <a href="#" class="${uid}-csv-export" title="Exporta el filtrado actual a un archivo CSV">CSV</a>
-                    <div class="${uid}-columns-multiselect">                        
-                        <button type="button" class="${uid}-toggle-columns-multiselect">
-                            Mostrar/ocultar columnas
-                        </button>                            
-                        <div class="${uid}-columns-multiselect-checkboxes">
-                            <label class="${uid}-columns-multiselect-label-main">
-                                <input type="checkbox" class="${uid}-chk-main">
-                                - Todas Visibles -
-                            </label>
-                            <div class="${uid}-columns-multiselect-labels"></div>
-                        </div>
-                    </div>
-                </div>
-                <table class="${uid}-datatable-table">
-                    <thead></thead>
-                    <tbody></tbody>
-                </table>
-                <div class="${uid}-datatable-footer">                        
-                    <button class="${uid}-previous-page">Ant.</button>
-                    &nbsp;
-                    Página <input type="number" class="${uid}-current-page"
-                        min = "1" max="1" value="1" length="4"> de <span>101</span>
-                    &nbsp;
-                    <button class="${uid}-next-page">Sig.</button>            
-                </div>       
-            </div>
-        `
     }
 
     /**

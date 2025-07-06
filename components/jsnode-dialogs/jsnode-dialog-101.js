@@ -10,7 +10,42 @@ class JsNodeDialog101 extends JsNode {
     // los últimos 12 caracteres hexadecimales
     static #uid = 'u' + crypto.randomUUID().substring(24);
     
-    static #template = JsNodeDialog101.#buildTemplate();
+    static #template = /*html*/`
+        <dialog class="${this.#uid}-dialog">
+            <form>
+                <div class="${this.#uid}-mb">
+                    <label class="${this.#uid}-form-label">
+                        Nombre
+                        <input type="text" name="name" class="${this.#uid}-form-control">
+                    </label>
+                </div>
+                <div class="${this.#uid}-mb">
+                    <label class="${this.#uid}-form-label">
+                        Ocupación
+                        <select name="work" class="${this.#uid}-form-control">
+                            <option value="estudent">Estudiante</option>
+                            <option value="teacher">Profesor</option>
+                            <option value="engineer">Ingeniero</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="${this.#uid}-mb">
+                    <label class="${this.#uid}-form-check-label">
+                        <input type="checkbox" name="isAvailable" class="${this.#uid}-form-check-control">
+                        Disponible
+                    </label>
+                </div>
+                <div class="">
+                    <button type="submit" class="submit ${this.#uid}-btn ${this.#uid}-btn-primary">
+                        Enviar
+                    </button>
+                    <button type="button" class="cancel ${this.#uid}-btn ${this.#uid}-btn-danger">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </dialog>
+    `;
 
     #options;
 
@@ -26,49 +61,6 @@ class JsNodeDialog101 extends JsNode {
             onCancel: console.log,
         };
         this.#initialize(options);
-    }
-    
-    // Contruye la plantilla
-    static #buildTemplate() {
-        // Para acortar los nombres        
-        const uid = this.#uid;
-
-        return /*html*/`
-            <dialog class="${uid}-dialog">
-                <form>
-                    <div class="${uid}-mb">
-                        <label class="${uid}-form-label">
-                            Nombre
-                            <input type="text" name="name" class="${uid}-form-control">
-                        </label>
-                    </div>
-                    <div class="${uid}-mb">
-                        <label class="${uid}-form-label">
-                            Ocupación
-                            <select name="work" class="${uid}-form-control">
-                                <option value="estudent">Estudiante</option>
-                                <option value="teacher">Profesor</option>
-                                <option value="engineer">Ingeniero</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div class="${uid}-mb">
-                        <label class="${uid}-form-check-label">
-                            <input type="checkbox" name="isAvailable" class="${uid}-form-check-control">
-                            Disponible
-                        </label>
-                    </div>
-                    <div class="">
-                        <button type="submit" class="submit ${uid}-btn ${uid}-btn-primary">
-                            Enviar
-                        </button>
-                        <button type="button" class="cancel ${uid}-btn ${uid}-btn-danger">
-                            Cancelar
-                        </button>
-                    </div>
-                </form>
-            </dialog>
-        `;
     }
 
     /**

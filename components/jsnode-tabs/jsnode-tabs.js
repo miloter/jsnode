@@ -6,17 +6,23 @@
  * @version 0.3.0 2025-06-27
  */
 class JsNodeTabs extends JsNode {
-    static #styleUid = 'data-' + crypto.randomUUID();
+    // Para generar un identificador común en todas las instancias, se toman
+    // los últimos 12 caracteres hexadecimales
+    static #uid = 'u' + crypto.randomUUID().substring(24);
 
     static #template = /*html*/`                        
-        <ul class="tab-links"></ul>
-        <div class="tab-content"></div>        
+        <div class="${this.#uid}-tabs">
+            <ul class="${this.#uid}-tabs-links"></ul>
+            <div class="${this.#uid}-tabs-content"></div>        
+        </div>
     `;
 
     #options;
 
     constructor(selector, options = {}) {
-        super(selector).addClass(JsNodeTabs.#styleUid);
+        // Inyectamos la plantilla en la selección actual, el this
+        // hara referencia a la misma
+        super(JsNode.select(selector).append(JsNodeTabs.#template).children(-1));
         this.#options = {
             tabs: [{
                 id: 'tab1',
@@ -36,28 +42,27 @@ class JsNodeTabs extends JsNode {
     }
 
     #updateAll(options = {}) {
-        this.#options = Object.assign(this.#options, options);
+        const uid = JsNodeTabs.#uid;
 
-        // Inyectamos la plantilla en la selección actual
-        this.html(JsNodeTabs.#template);
+        this.#options = Object.assign(this.#options, options);
 
         // Actualiza los estilos
         this.#updateStyles();
 
         // Construimos el componente
-        const tabLinks = this.select('.tab-links');
-        const tabContent = this.select('.tab-content');
+        const tabLinks = this.select(`.${uid}-tabs-links`);
+        const tabContent = this.select(`.${uid}-tabs-content`);
 
         for (const tab of this.#options.tabs) {
             tabLinks.append(/*html*/`
                 <li>
-                    <a href="#${tab.id}"${tab.activateOnlyByCode ? ' class="link-disabled"': ''}>
+                    <a href="#${tab.id}"${tab.activateOnlyByCode ? ` class="${uid}-link-disabled"`: ''}>
                         ${tab.text}
                     </a>
                 </li>
             `);
             tabContent.append(/*html*/`
-                <div id="${tab.id}" class="tab">
+                <div id="${tab.id}" class="${uid}-tab">
                     ${tab.content}
                 </div>
             `);
@@ -66,7 +71,7 @@ class JsNodeTabs extends JsNode {
         // Necesario para dentro de las funciones con otro this
         const self = this;        
         // Evento para controlar la selección de ficha
-        this.select(`.tab-links a`).on('click', function (event) {            
+        this.select(`.${uid}-tabs-links a`).on('click', function (event) {
             // Previene la navegación de enlaces
             event.preventDefault();
 
@@ -86,63 +91,65 @@ class JsNodeTabs extends JsNode {
     }
 
     #updateStyles() {
+        const uid = JsNodeTabs.#uid;
+
         // Le asigna estilos si aun no existen
-        if (!JsNode.select(`head > style[${JsNodeTabs.#styleUid}]`).length) {
-            JsNode.select('head').append(/*html*/`
-                <style ${JsNodeTabs.#styleUid}>
-                    .${JsNodeTabs.#styleUid} {
-                        width: 100%;
-                        display: inline-block;
-                    }                                        
-                    
-                    .${JsNodeTabs.#styleUid} .tab-links:after {
-                        display: block;
-                        clear: both;
-                        content: '';
-                    }
-                    
-                    .${JsNodeTabs.#styleUid} .tab-links li {
-                        margin: 0px 5px;
-                        float: left;
-                        list-style: none;
-                    }
+        if (JsNode.select(`head > style[${uid}]`).length) return;
+        
+        JsNode.select('head').append(/*html*/`
+            <style ${uid}>
+                .${uid}-tabs {
+                    width: 100%;
+                    display: inline-block;
+                }                                        
+                
+                .${uid}-tabs-links:after {
+                    display: block;
+                    clear: both;
+                    content: '';
+                }
+                
+                .${uid}-tabs-links li {
+                    margin: 0px 5px;
+                    float: left;
+                    list-style: none;
+                }
 
-                    .${JsNodeTabs.#styleUid} .tab-links a {
-                        padding: 9px 15px;
-                        display: inline-block;
-                        border-radius: 3px 3px 0px 0px;
-                        background-color: #7FB5DA;
-                        font-size: 16px;
-                        font-weight: 600;
-                        color: #4c4c4c;
-                        transition: all linear 0.15s;
-                    }
+                .${uid}-tabs-links a {
+                    padding: 9px 15px;
+                    display: inline-block;
+                    border-radius: 3px 3px 0px 0px;
+                    background-color: #7FB5DA;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #4c4c4c;
+                    transition: all linear 0.15s;
+                }
 
-                    .${JsNodeTabs.#styleUid} .tab-links a.link-disabled {
-                        opacity: 0.49999;
-                        text-decoration: none;
-                    }
+                .${uid}-link-disabled {
+                    opacity: 0.49999;
+                    text-decoration: none;
+                }
 
-                    .${JsNodeTabs.#styleUid} .tab-links a:hover {
-                        background: #a7cce5;
-                        text-decoration: none;
-                    }
+                .${uid}-tabs-links a:hover {
+                    background: #a7cce5;
+                    text-decoration: none;
+                }
 
-                    .${JsNodeTabs.#styleUid} li.active a,
-                    .${JsNodeTabs.#styleUid} li.active a:hover {
-                        background-color: lightgreen;
-                        color: #4c4c4c;
-                    }
-                    
-                    .${JsNodeTabs.#styleUid} .tab-content {
-                        padding: 15px;
-                        border-radius: 3px;
-                        box-shadow: -1px 1px 1px rgba(0, 0, 0, 0.15);
-                        background: #fff;
-                    }                              
-                </style>
-            `);
-        }
+                .${uid}-active a,
+                .${uid}-active a:hover {
+                    background-color: lightgreen;
+                    color: #4c4c4c;
+                }
+                
+                .${uid}-tabs-content {
+                    padding: 15px;
+                    border-radius: 3px;
+                    box-shadow: -1px 1px 1px rgba(0, 0, 0, 0.15);
+                    background: #fff;
+                }                              
+            </style>
+        `);        
     }
 
     /**
@@ -150,14 +157,16 @@ class JsNodeTabs extends JsNode {
      * @param {*} id 
      */
     activeTab(id) {
-        const link = this.select(`.tab-links a[href="#${id}"]`);
+        const uid = JsNodeTabs.#uid;
+
+        const link = this.select(`.${uid}-tabs-links a[href="#${id}"]`);
 
         // Agrega la cl<ase 'active' en el link actual y la elimina
         // del link activo previo
-        link.parent('li').addClass('active').siblings().removeClass('active');
+        link.parent('li').addClass(`${uid}-active`).siblings().removeClass(`${uid}-active`);
         
         // tab es la nueva pestaña que debe visualizarse
-        const tab = link.parents('ul', `.${JsNodeTabs.#styleUid}`).next().select(`#${id}`);
+        const tab = link.parents('ul', `.${uid}-tabs`).next().select(`#${id}`);
         
         // Oculta todas las pestañas    
         tab.hide().siblings().hide();

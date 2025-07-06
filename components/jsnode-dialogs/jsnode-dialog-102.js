@@ -10,7 +10,12 @@ class JsNodeDialog102 extends JsNode {
     // los últimos 12 caracteres hexadecimales
     static #uid = 'u' + crypto.randomUUID().substring(24);
 
-    static #template = this.#buildTemplate();
+    static #template = /*html*/`
+        <dialog class="${this.#uid}-dialog">
+            <h2 class="${this.#uid}-dialog-title"></h2>
+            <div class="${this.#uid}-dialog-content"></div>
+        </dialog>
+    `;
 
     #options;    
     
@@ -24,18 +29,6 @@ class JsNodeDialog102 extends JsNode {
             onCancel: console.log,
         };
         this.#initialize(options);
-    }
-
-    // Contruye la plantilla
-    static #buildTemplate() {        
-        const uid = this.#uid; // Para acortar los nombres
-
-        return /*html*/`
-            <dialog class="${uid}-dialog">
-                <h2 class="${uid}-dialog-title"></h2>
-                <div class="${uid}-dialog-content"></div>
-            </dialog>
-        `;
     }
 
     #initialize(options = {}) {        
