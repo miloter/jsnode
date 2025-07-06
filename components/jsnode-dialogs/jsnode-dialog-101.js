@@ -3,47 +3,14 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-07-05
- * @version 0.3.0 2025-07-05
+ * @version 0.4.0 2025-07-06
  */
 class JsNodeDialog101 extends JsNode {
-    static #styleUid = 'data-' + crypto.randomUUID();
-
-    static #template = /*html*/`                        
-        <dialog>
-            <form>
-                <div class="mb">
-                    <label class="form-label">
-                        Nombre
-                        <input type="text" name="name" class="form-control">
-                    </label>
-                </div>
-                <div class="mb">
-                    <label class="form-label">
-                        Ocupación
-                        <select name="work" class="form-control">
-                            <option value="estudent">Estudiante</option>
-                            <option value="teacher">Profesor</option>
-                            <option value="engineer">Ingeniero</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="mb">
-                    <label class="form-check-label">
-                        <input type="checkbox" name="isAvailable" class="form-check-control">
-                        Disponible
-                    </label>
-                </div>
-                <div class="d-flex justify-content-center align-items-center gap-1">
-                    <button type="submit" class="submit btn btn-primary">
-                        Enviar
-                    </button>
-                    <button type="button" class="cancel btn btn-danger">
-                        Cancelar
-                    </button>
-                </div>
-            </form>
-        </dialog>
-    `;
+    // Para generar un identificador común en todas las instancias, se toman
+    // los últimos 12 caracteres hexadecimales
+    static #uid = 'u' + crypto.randomUUID().substring(24);
+    
+    static #template = JsNodeDialog101.#buildTemplate();
 
     #options;
     // Referencia al cuadro de diálogo de la instancia
@@ -52,21 +19,71 @@ class JsNodeDialog101 extends JsNode {
     #isSubmitOrCancelButton;
 
     constructor(selector, options = {}) {
-        super(selector).addClass(JsNodeDialog101.#styleUid);
+        super(selector);
 
-        // super(selector).addClass(JsNodeDialog101.#styleUid);
         this.#options = {
             onSubmit: console.log,
             onCancel: console.log,
         };
         this.#initialize(options);
     }
+    
+    // Contruye la plantilla
+    static #buildTemplate() {
+        // Para acortar los nombres        
+        const uid = JsNodeDialog101;
+
+        return /*html*/`
+            <dialog class="${uid}-dialog">
+                <form>
+                    <div class="${uid}-mb">
+                        <label class="${uid}-form-label">
+                            Nombre
+                            <input type="text" name="name" class="${uid}-form-control">
+                        </label>
+                    </div>
+                    <div class="${uid}-mb">
+                        <label class="${uid}-form-label">
+                            Ocupación
+                            <select name="work" class="${uid}-form-control">
+                                <option value="estudent">Estudiante</option>
+                                <option value="teacher">Profesor</option>
+                                <option value="engineer">Ingeniero</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="${uid}-mb">
+                        <label class="${uid}-form-check-label">
+                            <input type="checkbox" name="isAvailable" class="${uid}-form-check-control">
+                            Disponible
+                        </label>
+                    </div>
+                    <div class="">
+                        <button type="submit" class="submit ${uid}-btn ${uid}-btn-primary">
+                            Enviar
+                        </button>
+                        <button type="button" class="cancel ${uid}-btn ${uid}-btn-danger">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </dialog>
+        `;
+    }
+
+    /**
+     * Devuelve el identificador único usado en esta clase.
+     * @returns {string}
+     */
+    static getUid() {
+        return JsNodeDialog101.#uid;
+    }
 
     #initialize(options = {}) {        
         this.#options = Object.assign(this.#options, options);
 
         // Agregamos la plantilla en la selección actual
-        this.#dialog = this.append(JsNodeDialog101.#template).children('dialog').nodes[0];
+        this.#dialog = this.append(JsNodeDialog101.#template).children(-1).nodes[0];
 
         // Inicialmente ni se ha enviado el formulario, ni se ha pulsado en cancelar
         this.#isSubmitOrCancelButton = false;
@@ -85,51 +102,54 @@ class JsNodeDialog101 extends JsNode {
     }
 
     #updateStyles() {
+        // Para acortar los nombres
+        const uid = JsNodeDialog101;
+
         // Le asigna estilos si aun no existen
-        if (JsNode.select(`head > style[${JsNodeDialog101.#styleUid}]`).length) return;
+        if (JsNode.select(`head > style[${uid}]`).length) return;
 
         JsNode.select('head').append(/*html*/`
-            <style ${JsNodeDialog101.#styleUid}>
-                .${JsNodeDialog101.#styleUid} dialog {
+            <style ${uid}>                
+                .${uid}-dialog {
                     background-color: yellowgreen;
                 }    
                 
-                .${JsNodeDialog101.#styleUid} .btn {
+                .${uid}-btn {
                     padding: 0.5rem;
                     font-size: 105%;                         
                 }
 
-                .${JsNodeDialog101.#styleUid} .btn:hover {
+                .${uid}-btn:hover {
                     outline: 2px solid orange;
                 }
 
-                .${JsNodeDialog101.#styleUid} .btn-primary {
+                .${uid}-btn-primary {
                     background-color: blue;
                     color: white;
                 }
 
-                .${JsNodeDialog101.#styleUid} .btn-danger {
+                .${uid}-btn-danger {
                     background-color: red;
                     color: white;
                 }
 
-                .${JsNodeDialog101.#styleUid} .mb {
+                .${uid}-mb {
                     margin-bottom: 0.50rem;
                 }                
 
-                .${JsNodeDialog101.#styleUid} .form-control {
+                .${uid}-form-control {
                     display: block;
                 }
 
-                .${JsNodeDialog101.#styleUid} .form-check-control {
+                .${uid}-form-check-control {
                     
                 }
                 
-                .${JsNodeDialog101.#styleUid} .form-label {
+                .${uid}-form-label {
                     
                 }
 
-                .${JsNodeDialog101.#styleUid} .form-check-label {
+                .${uid}-form-check-label {
                     
                 }
             </style>

@@ -3,47 +3,17 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-05-07
- * @version 0.4.0 2025-06-27
+ * @version 0.5.0 2025-07-06
  */
-class JsNodeDataTable {
-    static #styleUid = 'data-' + crypto.randomUUID();
-    static #template = /*html*/`                
-        <div>        
-            <div>    
-                Filas/Pág. <select></select>            
-            </div>
-            <button type="button" class="filters-unapply" title="Quita la ordenación y el filtrado">
-                &#x1F704;
-            </button>
-            <a href="#" class="csv-export" title="Exporta el filtrado actual a un archivo CSV">CSV</a>
-            <div class="columns-multiselect">                        
-                <button type="button" class="toggle-columns-multiselect">
-                    Mostrar/ocultar columnas
-                </button>                            
-                <div class="columns-multiselect-checkboxes">
-                    <label class="columns-multiselect-label-main">
-                        <input type="checkbox" class="chk-main">
-                        - Todas Visibles -
-                    </label>
-                    <div class="columns-multiselect-labels"></div>
-                </div>
-            </div>
-        </div>
-        <table>
-            <thead></thead>
-            <tbody></tbody>
-        </table>
-        <div>                        
-            <button>Ant.</button>
-            &nbsp;
-            Página <input type="number" min = "1" max="1" value="1" length="4"> de <span>101</span>
-            &nbsp;
-            <button>Sig.</button>            
-        </div>        
-    `;
+class JsNodeDataTable extends JsNode {
+    // Para generar un identificador común en todas las instancias, se toman
+    // los últimos 12 caracteres hexadecimales
+    static #uid = 'u' + crypto.randomUUID().substring(24);
+    // Plantilla que se inyectará en la página
+    static #template = JsNodeDataTable.#buildTemplate();
+    // Ayuda para el manejo de fechas
     static #reGroupedDateString = /^(\d{2})(?:\/|-)(\d{2})(?:\/|-)(\d{4})$/;
 
-    #el;
     #options;
     #currentPage;
     #keys;
@@ -53,10 +23,17 @@ class JsNodeDataTable {
     #filteredRowsCacheChanged;
     #sortMetaDataCache;
     #sortMetaDataCacheChanged;
+    // Nombre de clase única para cada instancia
     #classUid;
 
     constructor(selector, options = {}) {
-        this.#el = JsNode.select(selector).addClass(JsNodeDataTable.#styleUid);
+        // Selecciona la ubicación e inyecta la plantilla y construye
+        // el objeto haciendo que this se refiera al JsNodeDataTable
+        super(
+            JsNode.select(selector)
+                .append(JsNodeDataTable.#template)
+                .children(-1)
+        );
         this.#options = {
             columns: [
                 { key: 'id', text: 'ID', inputFilterSize: 5 },
@@ -72,25 +49,75 @@ class JsNodeDataTable {
             maxRowsPerPage: 2,
             maxRowsPerPageList: [2, 5, 10, 20, 50, 100]
         };
-        this.#classUid = 'class-' + crypto.randomUUID();
+        this.#classUid = 'c' + crypto.randomUUID().substring(24);
         this.#initialize(options);
+    }
+
+    // Contruye la plantilla
+    static #buildTemplate() {
+        // Para acortar los nombres        
+        const uid = JsNodeDataTable.#uid;
+
+        return /*html*/`            
+            <div class="${uid}-datatable">
+                <div class="${uid}-datatable-header">        
+                    <div>    
+                        Filas/Pág. <select class="${uid}-select-rows-per-page"></select>            
+                    </div>
+                    <button type="button" class="${uid}-filters-unapply" title="Quita la ordenación y el filtrado">
+                        &#x1F704;
+                    </button>
+                    <a href="#" class="${uid}-csv-export" title="Exporta el filtrado actual a un archivo CSV">CSV</a>
+                    <div class="${uid}-columns-multiselect">                        
+                        <button type="button" class="${uid}-toggle-columns-multiselect">
+                            Mostrar/ocultar columnas
+                        </button>                            
+                        <div class="${uid}-columns-multiselect-checkboxes">
+                            <label class="${uid}-columns-multiselect-label-main">
+                                <input type="checkbox" class="${uid}-chk-main">
+                                - Todas Visibles -
+                            </label>
+                            <div class="${uid}-columns-multiselect-labels"></div>
+                        </div>
+                    </div>
+                </div>
+                <table class="${uid}-datatable-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+                <div class="${uid}-datatable-footer">                        
+                    <button class="${uid}-previous-page">Ant.</button>
+                    &nbsp;
+                    Página <input type="number" class="${uid}-current-page"
+                        min = "1" max="1" value="1" length="4"> de <span>101</span>
+                    &nbsp;
+                    <button class="${uid}-next-page">Sig.</button>            
+                </div>       
+            </div>
+        `
+    }
+
+    /**
+     * Devuelve el identificador único usado en esta clase.
+     * @returns {string}
+     */
+    static getUid() {
+        return JsNodeDataTable.#uid;
     }
 
     #initialize(options = {}) {
         // Para las funciones que tienen su propio this
         const self = this;
+        // Para acceso rápido al identificador único de clase
+        const uid = JsNodeDataTable.#uid;
 
         this.#currentPage = 1;
         this.#options = Object.assign(this.#options, options);
         this.#filteredRowsCacheChanged = true;
         this.#sortMetaDataCacheChanged = true;
 
-        // Inyecta la plantila
-        this.#el.html(JsNodeDataTable.#template);
-
-
         // <select> máximo de filas visibles por página
-        const select = this.#el.select('select').html('');
+        const select = this.select(`.${uid}-select-rows-per-page`).html('');
         for (const n of this.#options.maxRowsPerPageList) {
             select.append(`<option value="${n}">${n}</option>`);
         }
@@ -100,53 +127,53 @@ class JsNodeDataTable {
             self.#updateRows();
         });
 
-        // <a> enlace de descarga del CSV ordenado y/o filtrado
-        this.#el.select('a.csv-export').on('click', function (event) {
+        // <.csv-export> enlace de descarga del CSV ordenado y/o filtrado
+        this.select(`.${uid}-csv-export`).on('click', function (event) {
             event.preventDefault();
             self.#downloadCsv();
         });
 
-        // <div.columns-multiselect>: Si se pulsa ESC se oculta la lista de
+        // <.columns-multiselect>: Si se pulsa ESC se oculta la lista de
         // los checkboxes de selección de columnas
-        this.#el.select('div.columns-multiselect').on('keyup', function (event) {
+        this.select(`.${uid}-columns-multiselect`).on('keyup', function (event) {
             if (event.key === 'Escape') {
-                this.select('div.columns-multiselect-checkboxes').hide();
+                this.select(`.${uid}-columns-multiselect-checkboxes`).hide();
             }
         })
             // Se le agrega además una clase única para esta instancia para diferenciarlo de las demás
             .addClass(this.#classUid);
-        
-            // <button.toggle-columns-multiselect>: alterna la visualización de
+
+        // <button.toggle-columns-multiselect>: alterna la visualización de
         // los checboxes de selección de columnas
-        this.#el.select('button.toggle-columns-multiselect').on('click', function () {
-            // .next() => <div.columns-multiselect-checkboxes>
+        this.select(`.${uid}-toggle-columns-multiselect`).on('click', function () {
+            // .next() => <.columns-multiselect-checkboxes>
             this.next().toggle();
         }).click(); // Inicialmente oculto    
-        
+
         // <document>: si se pulsa click con la selección de columnas abiertas
         // se cierran
         JsNode.select(document).on('click', event => {
-            const checkboxesList = this.#el.select('div.columns-multiselect-checkboxes');
+            const checkboxesList = this.select(`.${uid}-columns-multiselect-checkboxes`);
 
             // Si no está abierto no hace nada
             if (!checkboxesList.visible()) return;
 
             // La técnica consiste en saber si donde estamos haciendo click es
             // en el propio elemento, con lo que el lugar del click estaría
-            // contenido por el elemento <div.columns-multiselect.<uid>>, o bien no
+            // contenido por el elemento <.columns-multiselect.<uid>>, o bien no
             // está contenido y por tanto deber cerrarse la lista de selección
             // de columnas
             if (!JsNode.select(event.target).parents(
-                `div.columns-multiselect.${this.#classUid}`).length) {
+                `.${uid}-columns-multiselect.${this.#classUid}`).length) {
                 checkboxesList.hide();
             }
         });
-        
+
         // <div class="columns-multiselect-labels">: las columnas que se pueden
         // visualizar/ocultar
-        const cml = this.#el.select('div.columns-multiselect-labels');        
+        const cml = this.select(`.${uid}-columns-multiselect-labels`);
         for (let i = 0; i < this.#options.columns.length; i++) {
-            const col = this.#options.columns[i];            
+            const col = this.#options.columns[i];
             cml.append(/*html*/`
                 <label>
                     <input type="checkbox"${col.noVisible ? '' : ' checked'}
@@ -154,20 +181,20 @@ class JsNodeDataTable {
                     ${col.text}
                 </label>
             `);
-        }        
-        
+        }
+
         // Creamos un evento para poner o quitar la selección de cada una
-        cml.select('[type="checkbox"]').on('change', function() {
+        cml.select('[type="checkbox"]').on('change', function () {
             self.#options.columns[this.prop('dataset').colIndex].noVisible = !this.prop('checked');
             self.#updateHeader();
             self.#updateRows();
 
             // Actualizamos el selector de mostrar/ocultar todas
-            self.#el.select('.chk-main').prop('checked', !self.#options.columns.some(c => c.noVisible));
+            self.select(`.${uid}-chk-main`).prop('checked', !self.#options.columns.some(c => c.noVisible));
         });
-        
+
         // Creamos un evento para poner o quitar la selección de todas
-        this.#el.select('.chk-main').on('change', function () {
+        this.select(`.${uid}-chk-main`).on('change', function () {
             const checked = this.prop('checked');
 
             for (const col of self.#options.columns) {
@@ -178,10 +205,10 @@ class JsNodeDataTable {
             self.#updateRows();
         });
         // Inicialmente su valor depende de lo selecionado
-        this.#el.select('.chk-main').prop('checked', !this.#options.columns.some(c => c.noVisible));
+        this.select(`.${uid}-chk-main`).prop('checked', !this.#options.columns.some(c => c.noVisible));
 
-        // <button.filters-unapply>: desaplicar filtros
-        this.#el.select('button.filters-unapply').hide().on('click', function () {
+        // <.filters-unapply>: desaplicar filtros
+        this.select(`.${uid}-filters-unapply`).hide().on('click', function () {
             for (const col of self.#options.columns) {
                 col.orderType = 0;
                 col.orderPos = 0;
@@ -196,17 +223,17 @@ class JsNodeDataTable {
         });
 
         // INPUT/number de páginas
-        this.#el.select('[type="number"').on('change', function () {
+        this.select(`.${uid}-current-page`).on('change', function () {
             self.#currentPage = parseInt(this.val());
             self.#updateRows();
         });
 
         // Botones adelante atrás
-        this.#el.select('button').filterText('Ant.').on('click', function () {
+        this.select(`.${uid}-previous-page`).filterText('Ant.').on('click', function () {
             self.#currentPage--;
             self.#updateRows();
         });
-        this.#el.select('button').filterText('Sig.').on('click', function () {
+        this.select(`.${uid}-next-page`).filterText('Sig.').on('click', function () {
             self.#currentPage++;
             self.#updateRows();
         });
@@ -220,8 +247,11 @@ class JsNodeDataTable {
     }
 
     #updateHeader() {
+        // Para acceso rápido al identificador único de clase
+        const uid = JsNodeDataTable.#uid;
+
         this.#makeHeader();
-        this.#el.select('thead').html(this.#header);
+        this.select(`.${uid}-datatable-table thead`).html(this.#header);
 
         // Actualiza los eventos de la ordenación y los filtros
         const self = this;
@@ -232,7 +262,7 @@ class JsNodeDataTable {
             col.orderType = 0;
             col.orderPos = 0;
 
-            this.#el.select(`span[data-key="${col.key}"]`)
+            this.select(`.${uid}-datatable-table thead span[data-key="${col.key}"]`)
                 .html(JsNodeDataTable.#iconOrder(col))
                 .css('cursor', 'pointer')
                 .on('click', function () {
@@ -241,7 +271,7 @@ class JsNodeDataTable {
                     self.#updateSortingOrFilterStyles();
                 });
 
-            this.#el.select(`input[type="text"][data-key="${col.key}"]`)
+            this.select(`.${uid}-datatable-table thead input[type="text"][data-key="${col.key}"]`)
                 .on('input', function () {
                     col.filter = this.val();
                     self.#currentPage = 1;
@@ -253,18 +283,21 @@ class JsNodeDataTable {
     }
 
     #updateRows() {
+        // Para acceso rápido al identificador único de clase
+        const uid = JsNodeDataTable.#uid;
+
         this.#makeRows();
-        this.#el.select('tbody').html(this.#rows);
+        this.select(`.${uid}-datatable-table tbody`).html(this.#rows);
 
         // Actualiza los contadores de página
-        this.#el.select('[type="number"')
+        this.select(`.${uid}-current-page[type="number"`)
             .val(this.#currentPage)
             .attr('max', this.#maxPage)
             .next().text(this.#maxPage);
 
         // Actualiza los botones de anterior/siguiente
-        this.#el.select('button').filterText('Ant.').prop('disabled', this.#currentPage == 1);
-        this.#el.select('button').filterText('Sig.').prop('disabled', this.#currentPage >= this.#maxPage);
+        this.select(`.${uid}-previous-page`).prop('disabled', this.#currentPage == 1);
+        this.select(`.${uid}-next-page`).prop('disabled', this.#currentPage >= this.#maxPage);
     }
 
     get #maxPage() {
@@ -285,7 +318,7 @@ class JsNodeDataTable {
             // se ha suministrado y el valor del tamaño es mayor que 0
             if (col.inputFilterSize > 0) {
                 inputFilter = /*html*/`
-                    <span class="sort-control" data-key="${col.key}"></span>
+                    <span class="${JsNodeDataTable.#uid}-sort-control" data-key="${col.key}"></span>
                     <input type="text" size="${col.inputFilterSize}" data-key="${col.key}">
                     <br>
                 `;
@@ -370,86 +403,89 @@ class JsNodeDataTable {
     }
 
     #updateStyles() {
+        // Para acortar los nombres        
+        const uid = JsNodeDataTable.#uid;
+
         // Le asigna estilos si aun no existen
-        if (!JsNode.select(`head > style[${JsNodeDataTable.#styleUid}]`).length) {
-            JsNode.select('head').append(/*html*/`
-                <style ${JsNodeDataTable.#styleUid}>
-                    .${JsNodeDataTable.#styleUid} {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                    }
+        if (JsNode.select(`head > style[${uid}]`).length) return;
 
-                    .${JsNodeDataTable.#styleUid} > div:nth-child(1) {
-                        display: flex;                        
-                        justify-content: center;
-                        align-items: center;
-                        gap: 1rem;
-                        margin-bottom: 0.25rem;
-                    }
+        JsNode.select('head').append(/*html*/`
+            <style ${uid}>
+                .${uid}-datatable {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
 
-                    .${JsNodeDataTable.#styleUid} table {
-                        border-collapse: collapse;    
-                        margin-bottom: 0.25rem;
-                    }
+                .${uid}-datatable-header {
+                    display: flex;                        
+                    justify-content: center;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 0.25rem;
+                }
 
-                    .${JsNodeDataTable.#styleUid} table th, .${JsNodeDataTable.#styleUid} table td {
-                        border: 1px solid black;    
-                        padding: 0.5rem;    
-                    }
-                
-                    .${JsNodeDataTable.#styleUid} table thead th {
-                        text-align: center;
-                    }
-                
-                    .${JsNodeDataTable.#styleUid} table tr:nth-child(even) {
-                        background-color: rgba(192, 192, 192, 0.205);
-                    } /* Formato de filas pares */
-                
-                
-                    /* Color de fondo al pasar sobre una fila */
-                    .${JsNodeDataTable.#styleUid} table tr:hover > td:not(tfoot td) {
-                        background-color: rgba(154, 228, 241, 0.301);
-                    }
+                .${uid}-datatable-table {
+                    border-collapse: collapse;    
+                    margin-bottom: 0.25rem;
+                }
 
-                    .${JsNodeDataTable.#styleUid} .sort-control {
-                        padding: 0.25rem;                                                
-                    }
+                .${uid}-datatable-table th, .${uid}-datatable-table td {
+                    border: 1px solid black;    
+                    padding: 0.5rem;    
+                }
+            
+                .${uid}-datatable-table thead th {
+                    text-align: center;
+                }
+            
+                .${uid}-datatable-table tr:nth-child(even) {
+                    background-color: rgba(192, 192, 192, 0.205);
+                } /* Formato de filas pares */
+            
+            
+                /* Color de fondo al pasar sobre una fila */
+                .${uid}-datatable-table tr:hover > td:not(tfoot td) {
+                    background-color: rgba(154, 228, 241, 0.301);
+                }
 
-                    .${JsNodeDataTable.#styleUid} .sort-apply {
-                        background-color: lightblue;
-                        border: 1px solid black;
-                        border-radius: 50%;                                              
-                    }
+                .${uid}-sort-control {
+                    padding: 0.25rem;                                                
+                }
 
-                    .${JsNodeDataTable.#styleUid} .filters-unapply {
-                        background-color: tomato;
-                    }
+                .${uid}-sort-apply {
+                    background-color: lightblue;
+                    border: 1px solid black;
+                    border-radius: 50%;                                              
+                }
 
-                    .${JsNodeDataTable.#styleUid} .columns-multiselect {
-                        position: relative;
-                        margin: 0.16rem;
-                    }
+                .${uid}-filters-unapply {
+                    background-color: tomato;
+                }
 
-                    .${JsNodeDataTable.#styleUid} .columns-multiselect-checkboxes {
-                        position: absolute;
-                        z-index: 1;
-                        background-color: lightgray;
-                        border: 1px solid black;
-                        max-height: ${this.columnsMultiselectMaxHeight}rem;
-                        overflow: auto;
-                    }
+                .${uid}-columns-multiselect {
+                    position: relative;
+                    margin: 0.16rem;
+                }
 
-                    .${JsNodeDataTable.#styleUid} .columns-multiselect-checkboxes label {
-                        display: block;
-                    }
+                .${uid}-columns-multiselect-checkboxes {
+                    position: absolute;
+                    z-index: 1;
+                    background-color: lightgray;
+                    border: 1px solid black;
+                    max-height: ${this.columnsMultiselectMaxHeight}rem;
+                    overflow: auto;
+                }
 
-                    .${JsNodeDataTable.#styleUid} .columns-multiselect-label-main {
-                        background-color: #fff5cc;"
-                    }
-                </style>
-            `);
-        }
+                .${uid}-columns-multiselect-checkboxes label {
+                    display: block;
+                }
+
+                .${uid}-columns-multiselect-label-main {
+                    background-color: #fff5cc;"
+                }
+            </style>
+        `);
     }
 
     static #normalize(text) {
@@ -576,16 +612,19 @@ class JsNodeDataTable {
     }
 
     #updateSortingOrFilterStyles() {
+        // Para acceso rápido al identificador único de clase
+        const uid = JsNodeDataTable.#uid;
+
         let hasFilters = false;
 
         for (const col of this.#options.columns) {
-            const span = this.#el.select(`span[data-key="${col.key}"]`);
+            const span = this.select(`.${uid}-datatable-table thead span[data-key="${col.key}"]`);
 
             span.html(JsNodeDataTable.#iconOrder(col));
             if (col.orderType !== 0) {
-                span.addClass('sort-apply');
+                span.addClass(`${uid}-sort-apply`);
             } else {
-                span.removeClass('sort-apply');
+                span.removeClass(`${uid}-sort-apply`);
             }
 
             if (col.filter) {
@@ -593,7 +632,7 @@ class JsNodeDataTable {
             }
         }
 
-        const button = this.#el.select('button.filters-unapply');
+        const button = this.select(`.${uid}-filters-unapply`);
 
         if (this.#sortMetaDataCache.length || hasFilters) {
             button.show();
@@ -745,7 +784,7 @@ class JsNodeDataTable {
      */
     deleteRow(key, value) {
         this.#options.rows = this.#options.rows.filter(r => r[key] !== value);
-        this.#el.select('button.filters-unapply').show().click();
+        this.select(`.${JsNodeDataTable.#uid}-filters-unapply`).show().click();
     }
 
     /**
