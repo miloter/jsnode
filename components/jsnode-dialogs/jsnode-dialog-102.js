@@ -3,24 +3,21 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-07-05
- * @version 0.3.0 2025-07-05
+ * @version 0.4.0 2025-07-06
  */
 class JsNodeDialog102 extends JsNode {
-    static #styleUid = 'data-' + crypto.randomUUID();
+    // Para generar un identificador común en todas las instancias, se toman
+    // los últimos 12 caracteres hexadecimales
+    static #uid = 'u' + crypto.randomUUID().substring(24);
 
-    static #template = /*html*/`                        
-        <dialog>
-            <h2 class="title"></h2>
-            <div class="content"></div>
-        </dialog>
-    `;
+    static #template = this.#buildTemplate();
 
-    #options;
-    // Referencia al cuadro de diálogo de la instancia
-    #dialog;
+    #options;    
     
     constructor(selector, options = {}) {
-        super(selector).addClass(JsNodeDialog102.#styleUid);
+        // Agregamos la plantilla en la selección y hacemos que this sea una
+        // referencia al elemento HTML/DIALOG
+        super(JsNode.select(selector).append(JsNodeDialog102.#template).children(-1));
         this.#options = {            
             title: 'Título del mensaje',
             content: 'Contenido del mensaje',
@@ -29,15 +26,24 @@ class JsNodeDialog102 extends JsNode {
         this.#initialize(options);
     }
 
-    #initialize(options = {}) {
-        // Agregamos la plantilla en la selección actual
-        this.#dialog = this.append(JsNodeDialog102.#template).children('dialog').nodes[0];
+    // Contruye la plantilla
+    static #buildTemplate() {        
+        const uid = this.#uid; // Para acortar los nombres
 
+        return /*html*/`
+            <dialog class="${uid}-dialog">
+                <h2 class="${uid}-dialog-title"></h2>
+                <div class="${uid}-dialog-content"></div>
+            </dialog>
+        `;
+    }
+
+    #initialize(options = {}) {        
         // Actualizamos las opciones
         this.#_updateOptions(options);
 
         // Evento que controla que no se pueda cerrar pulsando Escape
-        this.select('dialog').on('keydown', event => {
+        this.on('keydown', event => {
             if (event.key === 'Escape') {
                 event.preventDefault();
             }
@@ -48,27 +54,31 @@ class JsNodeDialog102 extends JsNode {
     }
 
     #_updateOptions(options) {
+        const uid = JsNodeDialog102.#uid; // Para acortar los nombres
+
         Object.assign(this.#options, options);
-        this.select('.title').html(this.#options.title);
-        this.select('.content').html(this.#options.content);
+        this.select(`.${uid}-dialog-title`).html(this.#options.title);
+        this.select(`.${uid}-dialog-content`).html(this.#options.content);
     }
 
     #updateStyles() {
+        const uid = JsNodeDialog102.#uid; // Para acortar los nombres
+
         // Le asigna estilos si aun no existen
-        if (JsNode.select(`head > style[${JsNodeDialog102.#styleUid}]`).length) return;
+        if (JsNode.select(`head > style[${uid}]`).length) return;
 
         JsNode.select('head').append(/*html*/`
-            <style ${JsNodeDialog102.#styleUid}>
-                .${JsNodeDialog102.#styleUid} dialog {
+            <style ${uid}>
+                .${uid}-dialog {
                     background-color: yellowgreen;
                     max-width: 50%;
                 }                                    
 
-                .${JsNodeDialog102.#styleUid} .title {
+                .${uid}-dialog-title {
                     text-align: center;
                 }                                    
 
-                .${JsNodeDialog102.#styleUid} .content {
+                .${uid}-dialog-content {
                     text-align: justify;
                     font-family: monospace;
                     font-size: 111%;
@@ -84,7 +94,7 @@ class JsNodeDialog102 extends JsNode {
      */
     showModal(options = {}) {
         this.#_updateOptions(options);
-        this.#dialog.showModal();
+        this.nodes[0].showModal();
     }
 
     /**
@@ -101,6 +111,6 @@ class JsNodeDialog102 extends JsNode {
      * Cierra el cuadro de diálogo.
      */
     close() {
-        this.#dialog.close();
+        this.nodes[0].close();
     }
 }

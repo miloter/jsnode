@@ -13,13 +13,13 @@ class JsNodeDialog101 extends JsNode {
     static #template = JsNodeDialog101.#buildTemplate();
 
     #options;
-    // Referencia al cuadro de diálogo de la instancia
-    #dialog;
+
     // Indica si se ha enviado el formulario o se ha pulsado el botón cancelar
     #isSubmitOrCancelButton;
 
     constructor(selector, options = {}) {
-        super(selector);
+        // Esto hará que this apunte al elemento JsNodeDialog101
+        super(JsNode.select(selector).append(JsNodeDialog101.#template).children(-1));
 
         this.#options = {
             onSubmit: console.log,
@@ -31,7 +31,7 @@ class JsNodeDialog101 extends JsNode {
     // Contruye la plantilla
     static #buildTemplate() {
         // Para acortar los nombres        
-        const uid = JsNodeDialog101;
+        const uid = this.#uid;
 
         return /*html*/`
             <dialog class="${uid}-dialog">
@@ -76,14 +76,11 @@ class JsNodeDialog101 extends JsNode {
      * @returns {string}
      */
     static getUid() {
-        return JsNodeDialog101.#uid;
+        return this.#uid;
     }
 
     #initialize(options = {}) {        
-        this.#options = Object.assign(this.#options, options);
-
-        // Agregamos la plantilla en la selección actual
-        this.#dialog = this.append(JsNodeDialog101.#template).children(-1).nodes[0];
+        this.#options = Object.assign(this.#options, options);        
 
         // Inicialmente ni se ha enviado el formulario, ni se ha pulsado en cancelar
         this.#isSubmitOrCancelButton = false;
@@ -103,7 +100,7 @@ class JsNodeDialog101 extends JsNode {
 
     #updateStyles() {
         // Para acortar los nombres
-        const uid = JsNodeDialog101;
+        const uid = JsNodeDialog101.#uid;
 
         // Le asigna estilos si aun no existen
         if (JsNode.select(`head > style[${uid}]`).length) return;
@@ -189,7 +186,7 @@ class JsNodeDialog101 extends JsNode {
         this.#emitOnSubmit({ name, work, isAvailable });
 
         // Hay que cerrarlo (el submit no lo cierra)
-        this.#dialog.close();
+        this.nodes[0].close();
     }
 
     #onModalClose() {
@@ -204,20 +201,20 @@ class JsNodeDialog101 extends JsNode {
     #onModalCancelButton() {
         this.#isSubmitOrCancelButton = true;
         this.#emitOnCancel();        
-        this.#dialog.close();
+        this.nodes[0].close();
     }
 
     /**
      * Muestra el cuadro de diálogo.
      */
     showModal() {        
-        this.#dialog.showModal();
+        this.nodes[0].showModal();
     }
 
     /**
      * Cierra el cuadro de diálogo.
      */
     close() {
-        this.#dialog.close();
+        this.nodes[0].close();
     }
 }

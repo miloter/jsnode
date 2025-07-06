@@ -19,7 +19,7 @@
             $('#showModal102').on('click', () => {
                 const maxTime = 23000;
 
-                d102.showModal({ title: `Quedan ${maxTime / 1000} seg` });
+                d102.showModal({ title: `Quedan ${maxTime / 1000} seg`, content: '' });
                 setTimeout(() => {
                     d102.close();
                 }, maxTime);
@@ -27,7 +27,10 @@
                 let ms = 0;
                 const timer = setInterval(() => {
                     ms += 1000;
-                    d102.updateOptions({ title: `Quedan ${(maxTime - ms) / 1000} seg` })    
+                    d102.updateOptions({
+                        title: `Quedan ${(maxTime - ms) / 1000} seg`,
+                        content: 'Terminando en breve...' + crypto.randomUUID()
+                    })    
                     if (ms >= maxTime) clearInterval(timer);
                 }, 1000);
             });
