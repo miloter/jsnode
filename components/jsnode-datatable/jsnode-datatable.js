@@ -3,7 +3,7 @@
  * @copyright miloter
  * @license MIT
  * @since 2025-05-07
- * @version 0.5.0 2025-07-06
+ * @version 0.5.1 2025-07-08
  */
 class JsNodeDataTable extends JsNode {
     // Para generar un identificador común en todas las instancias, se toman
@@ -178,11 +178,12 @@ class JsNodeDataTable extends JsNode {
         // Creamos un evento para poner o quitar la selección de cada una
         cml.select('[type="checkbox"]').on('change', function () {
             self.#options.columns[this.prop('dataset').colIndex].noVisible = !this.prop('checked');
-            self.#updateHeader();
-            self.#updateRows();
 
             // Actualizamos el selector de mostrar/ocultar todas
             self.select(`.${uid}-chk-main`).prop('checked', !self.#options.columns.some(c => c.noVisible));
+
+            // Reseamos el estado de ordenación y filtrado
+            self.#resetSortOrFilter();            
         });
 
         // Creamos un evento para poner o quitar la selección de todas
@@ -193,25 +194,17 @@ class JsNodeDataTable extends JsNode {
                 col.noVisible = !checked;
             }
             cml.select('[type="checkbox"]').prop('checked', checked);
-            self.#updateHeader();
-            self.#updateRows();
+            
+            // Reseamos el estado de ordenación y filtrado
+            self.#resetSortOrFilter();            
         });
         // Inicialmente su valor depende de lo selecionado
         this.select(`.${uid}-chk-main`).prop('checked', !this.#options.columns.some(c => c.noVisible));
 
         // <.filters-unapply>: desaplicar filtros
         this.select(`.${uid}-filters-unapply`).hide().on('click', function () {
-            for (const col of self.#options.columns) {
-                col.orderType = 0;
-                col.orderPos = 0;
-                col.filter = 0;
-            }
-            self.#currentPage = 1;
-            self.#filteredRowsCacheChanged = true;
-            self.#sortMetaDataCacheChanged = true;
-            self.#updateHeader();
-            self.#updateRows();
-            this.hide();
+            // Reseamos el estado de ordenación y filtrado
+            self.#resetSortOrFilter();            
         });
 
         // INPUT/number de páginas
@@ -238,6 +231,22 @@ class JsNodeDataTable extends JsNode {
         this.#updateStyles();
     }
 
+    #resetSortOrFilter() {
+        for (const col of this.#options.columns) {
+            col.orderType = 0;
+            col.orderPos = 0;
+            col.filter = '';
+        }
+        this.#filteredRowsCacheChanged = true;
+        this.#sortMetaDataCacheChanged = true;
+        this.#currentPage = 1;
+        this.#updateHeader();
+        this.#updateRows();
+
+        // Ocultamos el botón de quitar filtros
+        this.select(`.${JsNodeDataTable.#uid}-filters-unapply`).hide();
+    }
+
     #updateHeader() {
         // Para acceso rápido al identificador único de clase
         const uid = JsNodeDataTable.#uid;
@@ -257,14 +266,14 @@ class JsNodeDataTable extends JsNode {
             this.select(`.${uid}-datatable-table thead span[data-key="${col.key}"]`)
                 .html(JsNodeDataTable.#iconOrder(col))
                 .css('cursor', 'pointer')
-                .on('click', function () {
+                .off().on('click', function () {
                     self.#setOrderType(col);
                     self.#updateRows();
                     self.#updateSortingOrFilterStyles();
                 });
 
             this.select(`.${uid}-datatable-table thead input[type="text"][data-key="${col.key}"]`)
-                .on('input', function () {
+                .off().on('input', function () {
                     col.filter = this.val();
                     self.#currentPage = 1;
                     self.#filteredRowsCacheChanged = true;
