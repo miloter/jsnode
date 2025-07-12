@@ -327,10 +327,10 @@ class JsNodeDataTable extends JsNode {
                 inputFilter = '';
             }
             html.push(/*html*/`
-                <th>
+                <th${col.maxWidth ? ` style="max-width: ${col.maxWidth}rem;"` : ''}>
                     ${inputFilter}                    
                     ${col.text}
-                </th>
+                </th$>
             `);
         }
         html.push('</tr>');
@@ -342,7 +342,11 @@ class JsNodeDataTable extends JsNode {
         for (const row of this.#rowsInCurrentPage) {
             html.push('<tr>');
             for (const key of this.#keys) {
-                html.push(`<td>${row[key]}</td>`);
+                const col = this.#options.columns.find(c => c.key === key);
+                
+                html.push(`<td${col.maxWidth ?
+                    ` style="max-width: ${col.maxWidth}rem;"` :
+                    ''}>${row[key]}</td$>`);
             }
             html.push('</tr>');
         }

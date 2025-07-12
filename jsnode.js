@@ -529,6 +529,21 @@ class JsNode {
     }
 
     /**
+     * Convierte un texto a un objeto Document envuelto en un JsNode.
+     * @param {string} text El texto a convertir.
+     * @param {string} type El tipo de documento a analizar, uno de:
+     *      text/html (valor por defecto)
+     *      text/xml
+     *      application/xml
+     *      application/xhtml+xml
+     *      image/svg+xml
+     * @returns {JsNode}
+     */
+    static toDocument(text, type='text/html') {
+        return new JsNode(new DOMParser().parseFromString(text, 'text/html'));
+    }
+
+    /**
      * Devuelve las partes de una fecha, como valores numéricos, en un objeto:
      * {     
      * 
