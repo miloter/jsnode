@@ -12,17 +12,18 @@
         JsNode.domLoaded().then(() => {
             const t1 = new JsNodeDataTable('#t1', {
                 columns: [
-                    { key: 'name', text: 'Nombre', inputFilterSize: 5, maxWidth: 5 },
-                    { key: 'age', text: 'Edad', inputFilterSize: 2, maxWidth: 3 },
+                    { key: 'name', text: 'Nombre', inputFilterSize: 5, maxWidth: 7 },
+                    { key: 'age', text: 'Edad', inputFilterSize: 8, maxWidth: 8 },
+                    { key: 'date', text: 'Fecha', inputFilterSize: 8, maxWidth: 20 },
                 ],
                 rows: [
-                    { name: 'Marco', age: 54 },
-                    { name: 'Laura', age: 54 },
-                    { name: 'Shakira', age: 29 },
-                    { name: 'Lady Gaga', age: 23 },
-                    { name: 'Laura', age: 37 },
-                    { name: 'Alejandro', age: 32 },
-                    { name: 'Marco', age: 18 },
+                    { name: 'Marco', age: 54, date: new Date(2003, 11, 11, 23, 11, 23, 123) },
+                    { name: 'Laura', age: 54, date: new Date(2099, 11, 18, 23, 11, 23, 124) },
+                    { name: 'Shakira', age: 29, date: new Date(2053, 10, 29, 21, 11, 23, 120) },
+                    { name: 'Lady Gaga', age: 23, date: new Date(2023, 9, 23, 19, 11, 23, 107) },
+                    { name: 'Laura', age: 37, date: new Date(2005, 7, 14, 23, 11, 23, 109) },
+                    { name: 'Alejandro', age: 32, date: new Date(2003, 2, 3, 23, 11, 23, 1) },
+                    { name: 'Marco', age: 18, date: new Date(2011, 11, 3, 17, 11, 23, 2) },
                 ],
                 maxRowsPerPage: 5,
                 maxRowsPerPageList: [2, 5, 10, 20],

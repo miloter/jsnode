@@ -48,8 +48,9 @@ class JsNodeDataTable extends JsNode {
         </div>
     `;
     // Ayuda para el manejo de fechas
-    static #reGroupedDateString = /^(\d{2})(?:\/|-)(\d{2})(?:\/|-)(\d{4})$/;
-
+    static #reGroupedIsoDate = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{1,2})(?::(\d{1,2})(?:\.(\d{1,9})Z?)?)?)?$/;
+    // Ayuda para el manejo de fechas
+    static #reGroupedSpainDate = /^(\d{1,2})(?:\/|-)(\d{1,2})(?:\/|-)(\d{4})(?:,? (\d{1,2}):(\d{1,2})(?::(\d{1,2})(?:\.(\d{1,9}))?)?)?$/;        
     #options;
     #currentPage;
     #keys;
@@ -562,8 +563,16 @@ class JsNodeDataTable extends JsNode {
         return function (a, b) {
             const valA = a[key], valB = b[key];
 
-            if (JsNodeDataTable.#isDateString(valA) && JsNodeDataTable.#isDateString(valB)) {
-                return orderType * JsNodeDataTable.#compareDate(valA, valB);
+            if ((valA instanceof Date) && (valB instanceof Date)) {
+                return orderType * (valA > valB ? 1 : -1);
+            }
+
+            if (JsNodeDataTable.#isSpainDate(valA) && JsNodeDataTable.#isSpainDate(valB)) {
+                return orderType * JsNodeDataTable.#compareSpainDate(valA, valB);
+            }
+
+            if (JsNodeDataTable.#isIsoDate(valA) && JsNodeDataTable.#isIsoDate(valB)) {
+                return orderType * JsNodeDataTable.#compareIsoDate(valA, valB);
             }
 
             if (JsNode.isNumber(valA) && JsNode.isNumber(valB)) {
@@ -574,33 +583,50 @@ class JsNodeDataTable extends JsNode {
         }
     }
 
-    static #isDateString(date) {
-        return /^\d{2}(?:\/|-)\d{2}(?:\/|-)\d{4}$/.test(date);
+    static #isIsoDate(date) {
+        return /^\d{4}-\d{1,2}-\d{1,2}(?:[T ]\d{1,2}:\d{1,2}(?::\d{1,2}(?:\.\d{1,9}Z?)?)?)?$/.test(date);
     }
 
-    static #isNumeric(expr) {
-        if (typeof (expr) === 'number' || typeof (expr) === 'bigint') {
-            return true;
-        } else if (typeof (expr) === 'string') {
-            return /^\s*[+-]?\d+(?:\.\d+)?(?:[Ee][+-]?\d+)?\s*$/.test(expr);
-        } else {
-            return false;
-        }
+    static #isSpainDate(date) {
+        return /^\d{1,2}(?:\/|-)\d{1,2}(?:\/|-)\d{4}(?:,? \d{1,2}:\d{1,2}(?::\d{1,2}(?:\.\d{1,9})?)?)?$/.test(date);
+    }
+
+    static #replaceIsoDate(full, year, month, day, hours, minutes, seconds, milliseconds) {            
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds ?? 0}.${milliseconds ?? 0}`;
     }
 
     /**
-     * Compara dos fechas en formato dd/mm/aaaa o dd-mm-aaaa.    
-     * @param {string} valA Fecha en formato dd/mm/aaaa o dd-mm-aaaa.
-     * @param {string} valB Fecha en formato dd/mm/aaaa o dd-mm-aaaa.
+     * Compara dos fechas en formato ISO Y-m-d H:i:s:u, la parte de hora
+     * es opcional y dentro de ella los segundos y los milisegundos.
+     * @param {string} valA Fecha en formato ISO.
+     * @param {string} valB Fecha en formato ISO.
      * @returns
      */
-    static #compareDate(valA, valB) {
-        const dateA = new Date(valA.replace(JsNodeDataTable.#reGroupedDateString, "$2/$1/$3"));
-        const dateB = new Date(valB.replace(JsNodeDataTable.#reGroupedDateString, "$2/$1/$3"));
+    static #compareIsoDate(valA, valB) {        
+        const dateA = new Date(valA.replace(JsNodeDataTable.#reGroupedIsoDate, this.#replaceIsoDate));
+        const dateB = new Date(valB.replace(JsNodeDataTable.#reGroupedIsoDate, this.#replaceIsoDate));
 
         return dateA > dateB ? 1 : -1;
     }
 
+    static #replaceSpainDate(full, day, month, year, hours, minutes, seconds, milliseconds) {            
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds ?? 0}.${milliseconds ?? 0}`;
+    }
+
+    /**
+     * Compara dos fechas en formato español d/m/Y H:i:s:u, la parte de hora
+     * es opcional y dentro de ella los segundos y los milisegundos.
+     * @param {string} valA Fecha en formato español.
+     * @param {string} valB Fecha en formato español.
+     * @returns
+     */
+    static #compareSpainDate(valA, valB) {        
+        const dateA = new Date(valA.replace(JsNodeDataTable.#reGroupedSpainDate, this.#replaceSpainDate));
+        const dateB = new Date(valB.replace(JsNodeDataTable.#reGroupedSpainDate, this.#replaceSpainDate));
+
+        return dateA > dateB ? 1 : -1;
+    }
+    
     /**
      * Devuelve el tipo de icono en función del orden actual.
      * @param {object} col Información de la columna, conteniendo el
