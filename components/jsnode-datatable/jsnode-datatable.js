@@ -32,6 +32,7 @@ class JsNodeDataTable extends JsNode {
                         <div class="${this.#uid}-columns-multiselect-labels"></div>
                     </div>
                 </div>
+                <div class="${this.#uid}-custom"></div>
             </div>
             <table class="${this.#uid}-datatable-table">
                 <thead></thead>
@@ -84,7 +85,8 @@ class JsNodeDataTable extends JsNode {
                 { id: 3, title: 'tarea 3', description: 'tarea número 3', actions: '<button type="button" data-id="3">Eliminar</button>' }
             ],
             maxRowsPerPage: 2,
-            maxRowsPerPageList: [2, 5, 10, 20, 50, 100]
+            maxRowsPerPageList: [2, 5, 10, 20, 50, 100],
+            onPageChanged: undefined
         };
         this.#classUid = 'c' + crypto.randomUUID().substring(24);
         this.#initialize(options);
@@ -208,6 +210,11 @@ class JsNodeDataTable extends JsNode {
             self.#resetSortOrFilter();            
         });
 
+        // Contenido personalizado opcional
+        if (this.#options.custom) {
+            this.select(`.${uid}-custom`).html(this.#options.custom);
+        }
+
         // INPUT/number de páginas
         this.select(`.${uid}-current-page`).on('change', function () {
             self.#currentPage = parseInt(this.val());
@@ -300,6 +307,11 @@ class JsNodeDataTable extends JsNode {
         // Actualiza los botones de anterior/siguiente
         this.select(`.${uid}-previous-page`).prop('disabled', this.#currentPage == 1);
         this.select(`.${uid}-next-page`).prop('disabled', this.#currentPage >= this.#maxPage);
+
+        // Avisa de la actualización de la página
+        if (typeof(this.#options.onPageChanged) === 'function') {
+            this.#options.onPageChanged(this.rowsInCurrentPage);
+        }
     }
 
     get #maxPage() {
@@ -331,6 +343,7 @@ class JsNodeDataTable extends JsNode {
                 <th${col.maxWidth ? ` style="max-width: ${col.maxWidth}rem;"` : ''}>
                     ${inputFilter}                    
                     ${col.text}
+                    ${col.html ?? ''}
                 </th$>
             `);
         }
@@ -340,7 +353,7 @@ class JsNodeDataTable extends JsNode {
 
     #makeRows() {
         const html = [];
-        for (const row of this.#rowsInCurrentPage) {
+        for (const row of this.rowsInCurrentPage) {
             html.push('<tr>');
             for (const key of this.#keys) {
                 const col = this.#options.columns.find(c => c.key === key);
@@ -352,12 +365,7 @@ class JsNodeDataTable extends JsNode {
             html.push('</tr>');
         }
         this.#rows = html.join('');
-    }
-
-    get #rowsInCurrentPage() {
-        const start = (this.#currentPage - 1) * this.#options.maxRowsPerPage;
-        return this.#orderedRows.slice(start, start + this.#options.maxRowsPerPage);
-    }
+    }    
 
     get #orderedRows() {
         if (!this.#sortMetaData.length) {
@@ -769,6 +777,15 @@ class JsNodeDataTable extends JsNode {
         }
 
         return sb.join('');
+    }
+
+    /**
+     * Devuelve las filas de la página actual.
+     * @returns {Array}
+     */
+    get rowsInCurrentPage() {
+        const start = (this.#currentPage - 1) * this.#options.maxRowsPerPage;
+        return this.#orderedRows.slice(start, start + this.#options.maxRowsPerPage);
     }
 
     /**

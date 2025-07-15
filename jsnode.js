@@ -131,10 +131,10 @@ class JsNode {
 
         contentType = contentType.toLowerCase();
         if (contentType === 'json') {
-            headers = { 'Content-Type': 'application/json' };
+            headers = { 'Content-Type': 'application/json; charset=UTF-8' };
             body = JSON.stringify(bodyObject);
         } else {
-            headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+            headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' };
             body = JsNode.objectToUrlEncoded(bodyObject);
         }
 
@@ -532,15 +532,21 @@ class JsNode {
      * Convierte un texto a un objeto Document envuelto en un JsNode.
      * @param {string} text El texto a convertir.
      * @param {string} type El tipo de documento a analizar, uno de:
+     * 
      *      text/html (valor por defecto)
+     * 
      *      text/xml
+     * 
      *      application/xml
+     * 
      *      application/xhtml+xml
+     * 
      *      image/svg+xml
+     * 
      * @returns {JsNode}
      */
     static toDocument(text, type='text/html') {
-        return new JsNode(new DOMParser().parseFromString(text, 'text/html'));
+        return new JsNode(new DOMParser().parseFromString(text, type));
     }
 
     /**
