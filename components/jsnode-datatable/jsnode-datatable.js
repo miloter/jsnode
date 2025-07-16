@@ -359,7 +359,7 @@ class JsNodeDataTable extends JsNode {
                 const col = this.#options.columns.find(c => c.key === key);
                 
                 html.push(`<td${col.maxWidth ?
-                    ` style="max-width: ${col.maxWidth}rem;"` :
+                    ` style="max-width: ${col.maxWidth}rem; overflow: auto;"` :
                     ''}>${row[key]}</td$>`);
             }
             html.push('</tr>');

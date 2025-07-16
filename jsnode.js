@@ -113,17 +113,17 @@ class JsNode {
     }
 
     static async #buildResponse(r, contentType) {
-        const resp = {};
-
-        resp.response = r;
+        const { ok, status, statusText } = r;
+        const response = { ok, status, statusText };
+        
         if (contentType === 'json') {
-            resp.data = await r.json();
+            response.data = await r.json();
         } else if (contentType === 'text') {
-            resp.data = await r.text();
+            response.data = await r.text();
         } else {
-            resp.data = await r.blob();
+            response.data = await r.blob();
         }
-        return resp;
+        return response;
     }
 
     static async #postOrPut(url, method, bodyObject, contentType) {

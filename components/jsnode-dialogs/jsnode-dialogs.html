@@ -7,6 +7,7 @@
     <script src="../../jsnode.js"></script>
     <script src="jsnode-dialog-101.js"></script>
     <script src="jsnode-dialog-102.js"></script>
+    <script src="jsnode-dialog-close.js"></script>
     <script>
         JsNode.use$().domLoaded().then(() => {
             const d101 = new JsNodeDialog101('#d101');               
@@ -14,7 +15,7 @@
                 title: 'Preparando el entorno',
                 content: 'Cargando todos los componentes, por favor espere, será solo un momento'
             });
-
+            const dialogClose = new JsNodeDialogClose('#dialogClose');
             $('#showModal101').on('click', () => d101.showModal());
             $('#showModal102').on('click', () => {
                 const maxTime = 23000;
@@ -34,6 +35,11 @@
                     if (ms >= maxTime) clearInterval(timer);
                 }, 1000);
             });
+            $('#showDialogClose').on('click', () => dialogClose.show({
+                title: 'Alerta',
+                content: 'Hola Mundo, bla bla ppppppppppppp aaaaaaaaaaaaaaaaaaa qqqqqqqqqqqqqq',
+                type: 'danger'
+            }));
         });
     </script>
 </head>
@@ -45,5 +51,10 @@
     <div id="d102">
         <button id="showModal102">Mostrar formulario modal que no se puede cerrar</button>
     </div>
+    <hr>
+    <div id="dialogClose">
+        <button id="showDialogClose">Mostrar mensaje que se puede cerrar</button>        
+    </div>
+    <div>Texto de prueba para ver el comportamiento de los componentes</div>
 </body>
 </html>
