@@ -26,9 +26,9 @@ class JsNodeDialogClose extends JsNode {
         // referencia al elemento HTML/DIALOG
         super(JsNode.select(selector).append(JsNodeDialogClose.#template).children(-1));
         this.#options = {            
-            title: 'Título del mensaje',
-            content: 'Contenido del mensaje',
-            type: 'success'
+            title: 'Título de prueba',
+            content: 'Mensaje de prueba',
+            type: 'success' // success | warning | danger
         };
         this.#initialize(options);
     }
@@ -76,6 +76,7 @@ class JsNodeDialogClose extends JsNode {
                     };
                     font-weight: bold;
                     border: 1px solid black;
+                    margin: 0.25rem auto;
                 }                                    
 
                 .${uid}-dialog-close {
