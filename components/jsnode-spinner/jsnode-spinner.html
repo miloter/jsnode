@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desarrollo de componentes cuadro de diálogo</title>    
+    <style>
+        .container1 {
+            margin: 0 auto;
+            background-color: yellow;
+            border: 2px solid black;
+            width: 100px;
+            height: 100px;
+            position: relative;            
+        }
+        
+        .container2 {      
+            margin: 0 auto;      
+            background-color: cyan;
+            border: 2px solid black;
+            width: 200px;
+            height: 200px;
+            position: relative;            
+        }
+
+        .buttons {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+        }
+    </style>
+    <script src="../../jsnode.js"></script>
+    <script src="jsnode-spinner.js"></script>
+    <script>
+        JsNode.use$().domLoaded().then(() => {
+            const spinner1 = new JsNodeSpinner('#spinner1', {
+                size: 32,
+                color: 'red'
+            });   
+            const spinner2 = new JsNodeSpinner('#spinner2', {
+                size: 64,
+                color: 'green'
+            });   
+
+            $('#showSpinner').on('click', () => {
+                spinner1.show();
+                spinner2.show();
+            });
+
+            $('#hideSpinner').on('click', () => {
+                spinner1.hide();
+                spinner2.hide();
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container1">
+        <div id="spinner1"></div>
+    </div>
+    <hr>
+    <div class="container2">
+        <div id="spinner2"></div>
+    </div>
+    <div class="buttons">
+        <button id="showSpinner">Mostrar Spinner</button>    
+        <button id="hideSpinner">Ocultar Spinner</button>    
+    </div>
+</body>
+</html>

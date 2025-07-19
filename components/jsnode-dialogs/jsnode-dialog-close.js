@@ -25,9 +25,10 @@ class JsNodeDialogClose extends JsNode {
         // Agregamos la plantilla en la selección y hacemos que this sea una
         // referencia al elemento HTML/DIALOG
         super(JsNode.select(selector).append(JsNodeDialogClose.#template).children(-1));
-        this.#options = {            
-            title: 'Título de prueba',
-            content: 'Mensaje de prueba',
+        this.#options = {  
+            scrollTop: true,          
+            title: '',
+            content: '',
             type: 'success' // success | warning | danger
         };
         this.#initialize(options);
@@ -112,6 +113,9 @@ class JsNodeDialogClose extends JsNode {
     show(options = {}) {
         this.#_updateOptions(options);
         this.nodes[0].show();
+        if (this.#options.scrollTop) {
+            window.scrollTo(0, 0);
+        }
     }
 
     /**

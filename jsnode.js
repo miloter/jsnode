@@ -16,18 +16,18 @@ class JsNode {
     // Constantes de utilidad
     static #dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     static #dayNames3L = JsNode.#dayNames.map(d => d.substring(0, 3));
-    static #monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    static #monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     static #monthNames3L = JsNode.#monthNames.map(m => m.substring(0, 3));
-    static #blockTagNames = ['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'CANVAS',
-        'DD', 'DIV', 'DL', 'DT', 'FIELDSET',
-        'FIGCAPTION', 'FIGURE', 'FOOTER', 'FORM', 'H1',
-        'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER',
-        'HR', 'LI', 'MAIN', 'NAV', 'NOSCRIPT',
-        'OL', 'P', 'PRE', 'SECTION', 'TABLE',
+    static #blockTagNames = ['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE',
+        'CANVAS', 'DD', 'DIV', 'DL', 'DT', 'FIELDSET', 'FIGCAPTION', 'FIGURE',
+        'FOOTER', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER', 'HR',
+        'LI', 'MAIN', 'NAV', 'NOSCRIPT', 'OL', 'P', 'PRE', 'SECTION', 'TABLE',
         'TFOOT', 'UL', 'VIDEO'];
 
     // Fotogramas por animación: La duración se divide en fpa partes animadas
     static #fpa = 60;
+    
     // Cola de animaciones
     static #queue = [];
 
