@@ -13,8 +13,23 @@
             const t1 = new JsNodeDataTable('#t1', {
                 custom: '<button>Botón Personalizado</button>',
                 columns: [
-                    { key: 'name', text: 'Nombre', inputFilterSize: 5, maxWidth: 7, html: '&nbsp;<button>Botón</button>' },
-                    { key: 'age', text: 'Edad', inputFilterSize: 8, maxWidth: 8 },
+                    {
+                        key: 'name',
+                        text: 'Nombre',
+                        inputFilterSize: 5,
+                        maxWidth: 7,
+                        html: '&nbsp;<button>Botón</button>',
+                        orderType: -1,
+                        orderPos: 3
+                    },
+                    {
+                        key: 'age',
+                        text: 'Edad',
+                        inputFilterSize: 8,
+                        maxWidth: 8,
+                        orderType: 1,
+                        orderPos: 4
+                    },
                     { key: 'date', text: 'Fecha', inputFilterSize: 8, maxWidth: 20 },
                 ],
                 rows: [
@@ -29,7 +44,7 @@
                 maxRowsPerPage: 5,
                 maxRowsPerPageList: [2, 5, 10, 20],
                 onPageChanged: rows => console.log(rows)
-            });                        
+            })//.setOrderColumn('age', 1);                        
         });
 
     </script>

@@ -237,6 +237,8 @@ class JsNodeDataTable extends JsNode {
 
         // Actualiza los estilos
         this.#updateStyles();
+
+        this.#updateSortingOrFilterStyles();
     }
 
     #resetSortOrFilter() {
@@ -267,9 +269,9 @@ class JsNodeDataTable extends JsNode {
         for (const col of this.#options.columns) {
             if (col.noVisible) continue;
 
-            col.filter = '';
-            col.orderType = 0;
-            col.orderPos = 0;
+            if (col.filter === undefined) col.filter = '';
+            if (col.orderType === undefined) col.orderType = 0;
+            if (col.orderPos === undefined) col.orderPos = 0;
 
             this.select(`.${uid}-datatable-table thead span[data-key="${col.key}"]`)
                 .html(JsNodeDataTable.#iconOrder(col))
@@ -287,7 +289,7 @@ class JsNodeDataTable extends JsNode {
                     self.#filteredRowsCacheChanged = true;
                     self.#updateRows();
                     self.#updateSortingOrFilterStyles();
-                });
+                }).val(col.filter);            
         }
     }
 
@@ -526,7 +528,6 @@ class JsNodeDataTable extends JsNode {
 
         return col;
     }
-
 
 
     /**
@@ -824,6 +825,8 @@ class JsNodeDataTable extends JsNode {
         this.#sortMetaDataCacheChanged = true;
         this.#updateRows();
     }
+
+
 
     /**
      * Elimina una fila de la colección.
