@@ -50,9 +50,9 @@
                 // Construye la respuesta de los métodos HTTP
                 const buildResponse = r => {
                     $('#out').val(
-                        r.response.status + (r.response.ok ? ' OK' : '') +
-                        (r.response.statusText ?
-                            ' ' + r.response.statusText :
+                        r.status + (r.ok ? ' OK' : '') +
+                        (r.statusText ?
+                            ' ' + r.statusText :
                             ''
                         ) + '\n\n' + JSON.stringify(r.data, undefined, '\t')
                     );

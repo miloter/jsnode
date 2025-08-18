@@ -1,23 +1,28 @@
 'use strict';
 
-// Por si se desea usar el símbolo $. Se usa <var> para poder
-// ser compatible con librerías que usen dicho símbolo.
+// If you want to use the $ symbol, use <var> to be compatible
+// with libraries that use this symbol.
 var $, $$;
 
 /**
- * @summary JsNode es similar a un jQuery reducido usando solo ES6+ y
- * el sistema de Promises/async/await donde es necesario.
+ * @summary JsNode is similar to a stripped-down jQuery using only
+ * ES6+ and the Promise/async/await system where necessary.
  * @copyright miloter
  * @license MIT
  * @since 2025-06-06 
- * @version 0.6.0 2025-06-23
+ * @version 0.6.1 2025-08-18
  */
-class JsNode {
-    // Constantes de utilidad
-    static #dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+class JsNode {    
+    // Utility constants
+    static #dayNames = this.locale === 'es' ?
+        ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'] :
+        ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     static #dayNames3L = JsNode.#dayNames.map(d => d.substring(0, 3));
-    static #monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    static #monthNames = this.locale === 'es' ?
+        ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'] :
+        ['january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'];
     static #monthNames3L = JsNode.#monthNames.map(m => m.substring(0, 3));
     static #blockTagNames = ['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE',
         'CANVAS', 'DD', 'DIV', 'DL', 'DT', 'FIELDSET', 'FIGCAPTION', 'FIGURE',
@@ -25,10 +30,10 @@ class JsNode {
         'LI', 'MAIN', 'NAV', 'NOSCRIPT', 'OL', 'P', 'PRE', 'SECTION', 'TABLE',
         'TFOOT', 'UL', 'VIDEO'];
 
-    // Fotogramas por animación: La duración se divide en fpa partes animadas
+    // Frames per animation: The duration is divided into frames per animated parts.
     static #fpa = 60;
     
-    // Cola de animaciones
+    // Animation queue
     static #queue = [];
 
     // Flag que obliga a detener la animación actual si es true
@@ -1000,7 +1005,7 @@ class JsNode {
      * @param {string} url 
      * @param {object} bodyObject 
      * @param {string} contentType 
-     * @returns {Promise<object>}
+     * @returns {Promise<{ok: boolean; status: number; statusText: string; data: any}>}
      */
     static async post(url, bodyObject = {}, contentType = 'text') {
         return JsNode.#postOrPut(url, 'POST', bodyObject, contentType);
@@ -1011,7 +1016,7 @@ class JsNode {
      * @param {string} url 
      * @param {object} bodyObject 
      * @param {string} contentType 
-     * @returns {Promise<object>}
+     * @returns {Promise<{ok: boolean; status: number; statusText: string; data: any}>}
      */
     static async put(url, bodyObject = {}, contentType = 'text') {
         return JsNode.#postOrPut(url, 'PUT', bodyObject, contentType);
@@ -1022,7 +1027,7 @@ class JsNode {
      * @param {string} url 
      * @param {object} params 
      * @param {string} contentType 
-     * @returns {Promise<object>}
+     * @returns {Promise<{ok: boolean; status: number; statusText: string; data: any}>}
      */
     static async get(url, params = {}, contentType = 'text') {
         return JsNode.#getOrDelete(url, 'GET', params, contentType);
@@ -1033,7 +1038,7 @@ class JsNode {
      * @param {string} url 
      * @param {object} params 
      * @param {string} contentType 
-     * @returns {Promise<object>}
+     * @returns {Promise<{ok: boolean; status: number; statusText: string; data: any}>}
      */
     static async delete(url, params = {}, contentType = 'text') {
         return JsNode.#getOrDelete(url, 'DELETE', params, contentType);
@@ -1303,6 +1308,13 @@ class JsNode {
      */
     static getTypeName(expr) {
         return /^\[object (\w+)\]$/.exec(Object.prototype.toString.call(expr))[1];
+    }
+
+    /**
+     * User location.
+     */
+    static get locale() {        
+        return Intl.DateTimeFormat().resolvedOptions().locale.substring(0, 2);
     }
 
     /**
