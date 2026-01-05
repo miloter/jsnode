@@ -1,23 +1,23 @@
 /**
- * @summary JsNode is similar to a stripped-down jQuery using only
- * ES6+ and the Promise/async/await system where necessary.
+ * @summary JsNode es una librería para manejar el DOM con algunas utilidades
+ * usando solo ES6+ y el sistema Promise/async/await donde es necesario.
  * @copyright miloter
  * @license MIT
  * @since 2025-06-06 
- * @version 0.6.1 2025-09-20
+ * @version 0.6.2 2026-01-05
  */
 
 'use strict';
 
-// If you want to use the $ symbol, use <var> to be compatible
-// with libraries that use this symbol.
+// Por si se desea utilizar el símbolo $, se utiliza <var> para ser compatible
+// con las bibliotecas que utilizan este símbolo
 var $, $$;
 
 /**
- * Provides class and instance methods to efficiently manipulate the DOM.
+ * Proporciona métodos de clase e instancia para manipular eficientemente el DOM.
  */
 class JsNode {    
-    // Utility constants
+    // Constantes de utilidad
     static #dayNames = this.locale === 'es' ?
         ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'] :
         ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -34,27 +34,28 @@ class JsNode {
         'LI', 'MAIN', 'NAV', 'NOSCRIPT', 'OL', 'P', 'PRE', 'SECTION', 'TABLE',
         'TFOOT', 'UL', 'VIDEO'];
 
-    // Frames per animation: The duration is divided into frames per animated parts.
+    // Fotogramas por animación: La duración se divide en fotogramas por partes animadas
     static #fpa = 60;
     
-    // Animation queue
+    // Cola de animación
     static #queue = [];
 
-    // Flag that forces the current animation to stop if it is true
+    // Bandera que fuerza a que la animación actual se detenga si es true
     static #stopAnimation = false;
 
-    // DOM nodes of the current instance
+    // Nodos DOM de la instancia actual
     #nodes;
 
     /**
-     * Creates a new JsNode from a CSS selector, a Document object, a Window object, an
-     * HTML element, a NodeList object, an array of HTML elements, or a JsNode object.
-     * If no selector is passed, it is instantiated with an empty selection.
+     * Crea un nuevo JsNode a partir de un selector CSS, un objeto Document, un
+     * objeto Window, un elemento HTML, un objeto NodeList, una matriz de
+     * elementos HTML o un objeto JsNode.
      * @param {string | Document | Window | HTMLElement |
-     *      NodeList | Array | JsNode | undefined} selector Valid CSS selector, the
-     *      document, the window, an HTML element, a list of HTML elements, an
-     *      array, a JsNode object, or no arguments.
-     * @returns A Node Js object with the selection.
+     *      NodeList | Array | JsNode | undefined} selector Selector CSS o un
+     * objeto Document, un objeto Window, un elemento HTML, un objeto NodeList
+     * una matriz de elementos HTML, un objeto JsNode o ningún argumento si
+     * se quiere crear una selección vacía.
+     * @returns Un objeto JsNode con la selección.
      */
     constructor(selector = undefined) {
         try {
@@ -1389,7 +1390,7 @@ class JsNode {
             JsNode.#stopAnimation = false;
         } else {
             if (typeof (callback) === 'function') {
-                callback.call(this);
+                callback(this);
             }
         }
         resolve();
@@ -1453,7 +1454,7 @@ class JsNode {
         if (ignoreCase) {
             text = text.normalize('NFD').toLowerCase().replace(/[\u0300-\u036f]/g, '')
         }
-        this.#nodes = this.#nodes.filter(node => {
+        const nodes = this.#nodes.filter(node => {
             let res;
             if (ignoreCase) {
                 res = node.innerText.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().indexOf(text) >= 0;
@@ -1463,41 +1464,37 @@ class JsNode {
             return negate ? !res : res;
         });
 
-        return this;
+        return new JsNode(nodes);
     }
 
     /**
-     * Devuelve un objeto JsNode con los elementos que cumplan el patrón
-     * o los que no lo cumplan si negate es true.
+     * Devuelve un objeto JsNode con los elementos que cumplan un patrón de
+     * expresión regular.
      * @param {string} pattern Patrón de expresión regular.
-     * @param {string} [flags] Flags usados en la búsqueda, por defecto ninguno.     
-     * @param {Function} callback Función de devolución de
-     * llamada opcional que recibirá como primer argumento un Array de n elementos
-     * con la forma:
+     * @param {string} [flags] Flags usados en la búsqueda, por defecto ninguno.
+     * @param {function(JsNode, any[], number): boolean} [callback] Función de
+     * devolución de llamada opcional que recibirá como primer argumento el
+     * objeto JsNode actual, como segundo argumento un array de n elementos
+     * con la forma:     
      * 
-     * [0]: Primer texto coincidente con el patrón.
-     * 
-     * ...
-     * 
-     * [n - 1]: Texto capturado en el el grupo n-ésimo.
-     * 
-     * index: Posición de la primera coincidencia.
-     * 
+     * [0]: Primer texto coincidente con el patrón.     
+     * ...    
+     * [n - 1]: Texto capturado en el el grupo n-ésimo.    
+     * index: Posición de la primera coincidencia.    
      * input: Texto con el que se compara el patrón.
      * 
-     * Además recibe como segundo argumento el índice de dicho nodo en la selección.
-     * Dentro de la función this hará referencia al nodo actual como un JsNode.
+     * Además recibe como tercer argumento el índice de dicho nodo en la selección.
      * La función debe devolver true si acepta la coincidencia o false si no la acepta.
      * @returns {JsNode} Un objeto JsNode con los elementos que cumplan el patrón.
      */
-    filterRegExp(pattern, flags = '', callback) {
+    filterRegExp(pattern, flags = '', callback = undefined) {
         const re = new RegExp(pattern, flags);
-        this.#nodes = this.#nodes.filter((node, index) => {
+        const nodes = this.#nodes.filter((node, index) => {
             let res;
             if (typeof (callback) === 'function') {
                 res = re.exec(node.innerText)
                 if (res) {
-                    res = callback.call(new JsNode(node), res, index);
+                    res = callback(new JsNode(node), res, index);
                 }
                 // Para valores no booleanos
                 res = !!res;
@@ -1506,7 +1503,8 @@ class JsNode {
             }
             return res;
         });
-        return this;
+
+        return new JsNode(nodes);
     }
 
     /**
@@ -1526,41 +1524,43 @@ class JsNode {
     }
 
     /**
-     * Itera por la selección actual pasando a un callback el índice que ocupa
-     * en la selección, el this en la función es una instancia de JsNode para
-     * cada nodo DOM de la selección. El retorno del callback no se tiene en cuenta.
-     * @param {Function} callback Función que recibirá como primer argumento
-     * el íncide que ocupa en la selección el elemento representado por this
-     * cuando se active el callback.
+     * Itera por la selección actual pasando a un callback dos argumentos, el
+     * primero es el objeto JsNode actual, y el segundo, el índice que ocupa
+     * en la selección. El retorno del callback no se tiene en cuenta.
+     * @param {function(JsNode, number): void} callback Función que recibirá
+     * como primer argumento el objeto JsNode actual, y como segundo el índice
+     * que ocupa el nodo en la selección.
      * @returns {JsNode} La misma selección actual.
      */
     each(callback) {
-        this.#nodes.forEach((node, index) => callback.call(new JsNode(node), index));
+        this.#nodes.forEach((node, index) => callback(new JsNode(node), index));
 
         return this;
     }
 
     /**
-     * Devuelve un JsNode conteniendo los elementos filtrados de la selección actual.
-     * @param {string|Function} selector Selector CSS o función de devolución de
-     * llamada que recibe el nodo actual como un JsNode y el índice en la lista de nodos, si
-     * devuelve true el nodo se agrega a la selección, y no se agrega si
-     * devuelve false.     
+     * Devuelve un JsNode conteniendo los elementos filtrados de la selección
+     * actual.
+     * @param {string|function(JsNode, number): JsNode} selector Selector CSS; o
+     * función de devolución de llamada que recibe como primer parámetro, el
+     * nodo actual como un JsNode como y como segundo argumento el índice en la
+     * lista de nodos. Si devuelve true el nodo se agrega a la selección, y no
+     * se agrega si devuelve false.     
      * @returns {JsNode} Un objeto JsNode con el resultado del filtrado.
      */
     filter(selector) {
-        this.#nodes = this.#nodes.filter((node, index) => {
+        const nodes = this.#nodes.filter((node, index) => {
             let res;
 
             if (typeof (selector) === 'function') {
-                res = !!selector.call(new JsNode(node), index);
+                res = !!selector(new JsNode(node), index);
             } else {
                 res = node.matches(selector);
             }
             return res
         });
 
-        return this;
+        return new JsNode(nodes);
     }
 
     /**
@@ -1573,9 +1573,9 @@ class JsNode {
      * @returns {JsNode} Un objeto JsNode con la nueva selección.
      */
     slice(start = 0, end = undefined) {
-        this.#nodes = this.#nodes.slice(start, end);
+        const nodes = this.#nodes.slice(start, end);
 
-        return this;
+        return new JsNode(nodes);
     }
 
     /**
@@ -1895,7 +1895,7 @@ class JsNode {
 
     /**
      * Selecciona los hijos de cada elemento de la selección actual.
-     * @param {string|number|undefined} Selector opcional que debe verificar cada hijo
+     * @param {string|number|undefined} selector Selector opcional que debe verificar cada hijo
      * para agregarse a la selección o número de índice del
      * hijo que será seleccionado. Si no se pasa ningún argumento o es
      * undefined se devuelven todos los hijos.
@@ -2151,8 +2151,8 @@ class JsNode {
      * 
      * 'opacity': Se aumenta solo la opacidad.     
      * 
-     * @param {Function|undefined} Función de callback opcional que será invocada
-     * cuando la animación acabe.
+     * @param {function(JsNode): void} [callback] Función de callback opcional que será invocada
+     * cuando la animación acabe. Recibe como argumento el objeto JsNode actual.
      * @returns {JsNode}
      */
     show(duration = undefined, delay = 0, effect = 'all', callback = undefined) {
@@ -2224,8 +2224,8 @@ class JsNode {
      * 
      * 'opacity': Se disminuye solo la opacidad.
      *     
-     * @param {Function|undefined} Función de callback opcional que será invocada
-     * cuando la animación acabe, dentro del callback, this referencia al JsNode actual.
+     * @param {function(JsNode): void} [callback] Función de callback opcional que será invocada
+     * cuando la animación acabe. Como primer argumento se recibe el objeto JsNode actual.
      * @returns {JsNode}
      */
     hide(duration = undefined, delay = 0, effect = 'all', callback = undefined) {
@@ -2297,8 +2297,8 @@ class JsNode {
      * 
      * 'opacity': Se aumenta/disminuye solo la opacidad.     
      * 
-     * @param {Function|undefined} Función de callback opcional que será invocada
-     * cuando la animación acabe, dentro del callback, this referencia al JsNode actual.
+     * @param {function(JsNode): void} [callback] Función de callback opcional que será invocada
+     * cuando la animación acabe. Como primer argumento se recibe el objeto JsNode actual.
      * @returns {JsNode}
      */
     toggle(duration = undefined, delay = 0, effect = 'all', callback = undefined) {
@@ -2432,12 +2432,12 @@ class JsNode {
     /**
      * Agrega un nuevo controlador de eventos a los elementos actualmente seleccionados.
      * @param {string} eventName Nombre del evento.
-     * @param {Function} callback Función que se llamará cuando se produzca el evento.
-     * Como primer parámetro recibirá el evento y el this interno será una instancia
-     * de JsNode donde se haya producido el evento.
+     * @param {function(Event): void} callback Función que se llamará cuando se
+     * produzca el evento. Como primer parámetro recibirá el evento y el this
+     * interno será una instancia del JsNode donde se haya producido el evento.
      * @returns {JsNode} Una instancia JsNode con la selección actual.
      */
-    on(eventName, callback, once = false) {
+    on(eventName, callback) {
         for (const node of this.#nodes) {
             if (!node.listeners) {
                 node.listeners = {};

@@ -28,9 +28,9 @@
                         padding: '2rem',
                         borderRadius: '100%',
                         border: '2px solid black'
-                    }).hide().show(7000, 0, 'opacity', function () {
-                        this.hide().css('color', 'red').show(7000, 0, 'all');
-                    });
+                    }).hide().show(7000, 0, 'opacity',
+                        n => n.hide().css('color', 'red').show(7000, 0, 'all')
+                    );
             }
 
             // Ocultamos el mensaje

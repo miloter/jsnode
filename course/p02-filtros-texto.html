@@ -48,7 +48,7 @@
             JsNode.select('.r1997-1999').on('click', () => {
                 // Con la versión de .filterRegExp(...) que usa un callback
                 // podemos filtrar un rango complejo
-                JsNode.select('.table tbody td').filterRegExp('^\\d+$', '', arr => {
+                JsNode.select('.table tbody td').filterRegExp('^\\d+$', '', (n, arr) => {
                     const year = parseInt(arr[0]);
 
                     // Seleccionamos justo lo contrario para luego ocultar las filas
@@ -63,12 +63,8 @@
                 // así no seleccionamos la celda con 'NDoe'. Con el flag 'i'
                 // indicamos que haya diferencias entre mayúsculas y minúsculas
                 JsNode.select('.table tbody td').filterRegExp('\\bdoe\\b', 'i')
-                    // Con .each(...) podemos recorrer la selección como objetos JsNode.
-                    // Para que el this funcione no se debe usar aquí una arrow function
-                    .each(function (index) {
-                        const text = this.text();
-                        this.text(this.text().replace(/\bdoe\b/i, 'Smith'));
-                    });
+                    // Con .each(...) podemos recorrer la selección como objetos JsNode                    
+                    .each((n, index) => n.text(n.text().replace(/\bdoe\b/i, 'Smith')));
             });
         });
     </script>

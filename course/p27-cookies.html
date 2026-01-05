@@ -48,9 +48,7 @@
                         backgroundColor: 'yellow',
                         padding: '0.5rem',
                         border: '2px solid red'
-                    }).hide(600, 600, 'opacity', function () {
-                        console.log(this);
-                    });                
+                    }).hide(600, 600, 'opacity', console.log);                
             });
 
             $('#loadCookie').on('click', () => {
@@ -68,9 +66,7 @@
                     backgroundColor: 'cyan',
                     padding: '0.5rem',
                     border: '2px solid red'
-                }).hide(600, 600, 'opacity', function() {
-                    console.log(this);
-                });
+                }).hide(600, 600, 'opacity', console.log);
             });
         });
     </script>

@@ -102,9 +102,8 @@
                             <strong>Tipo de envío:</strong>
                             <!-- Nótese como seleccionamos el radio marcado -->
                             <span>
-                                 ${JsNode.select('.radios [type="radio"]').filter(function() {
-                                    return this.prop('checked')
-                                })
+                                 ${JsNode.select('.radios [type="radio"]')
+                                 .filter(n => n.prop('checked'))
                                 // El texto está en la etiqueta
                                 .next().text()}
                             </span>
