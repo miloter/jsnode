@@ -1,3 +1,12 @@
+/**
+ * @summary JsNode is similar to a stripped-down jQuery using only
+ * ES6+ and the Promise/async/await system where necessary.
+ * @copyright miloter
+ * @license MIT
+ * @since 2025-06-06 
+ * @version 0.6.1 2025-09-20
+ */
+
 'use strict';
 
 // If you want to use the $ symbol, use <var> to be compatible
@@ -5,12 +14,7 @@
 var $, $$;
 
 /**
- * @summary JsNode is similar to a stripped-down jQuery using only
- * ES6+ and the Promise/async/await system where necessary.
- * @copyright miloter
- * @license MIT
- * @since 2025-06-06 
- * @version 0.6.1 2025-08-18
+ * Provides class and instance methods to efficiently manipulate the DOM.
  */
 class JsNode {    
     // Utility constants
@@ -36,21 +40,21 @@ class JsNode {
     // Animation queue
     static #queue = [];
 
-    // Flag que obliga a detener la animación actual si es true
+    // Flag that forces the current animation to stop if it is true
     static #stopAnimation = false;
 
-    // Nodos DOM de la instancia actual
+    // DOM nodes of the current instance
     #nodes;
 
     /**
-     * Crea u nuevo JsNode a partir de un selector CSS, un objeto Document, un
-     * objeto Windwow, un elemento HTML, un objeto NodeList, un array de
-     * elementos HHTML o un objeto JsNode. Si no se pasa ningún selector, se
-     * intancia con una selección vacía.
-     * @param {string|Document|Window|HTMLElement|NodeList|Array|JsNode|undefined} selector Selector CSS
-     * válido, el documento, la ventana, un elemento HTML, una lista de
-     * elementos HTML, un array, un objeto JsNode o ningún argumento.
-     * @returns Un objeto JsNode con la selección.
+     * Creates a new JsNode from a CSS selector, a Document object, a Window object, an
+     * HTML element, a NodeList object, an array of HTML elements, or a JsNode object.
+     * If no selector is passed, it is instantiated with an empty selection.
+     * @param {string | Document | Window | HTMLElement |
+     *      NodeList | Array | JsNode | undefined} selector Valid CSS selector, the
+     *      document, the window, an HTML element, a list of HTML elements, an
+     *      array, a JsNode object, or no arguments.
+     * @returns A Node Js object with the selection.
      */
     constructor(selector = undefined) {
         try {
@@ -69,12 +73,12 @@ class JsNode {
             } else if (selector === undefined) {
                 this.#nodes = [];
             } else {
-                throw new TypeError(`Selector no válido: ${selector}`);
+                throw new TypeError(`Invalid selector: ${selector}`);
             }
         } catch (error) {
             this.#nodes = [];
             console.error(error);
-            console.info('Se continúa sin nodos seleccionados');
+            console.info('Continue without selected nodes');
         }
     }
 
@@ -1311,15 +1315,15 @@ class JsNode {
     }
 
     /**
-     * User location.
+     * Devuelve una propiedad con la localización del usuario: es, en, etc.
      */
     static get locale() {        
         return Intl.DateTimeFormat().resolvedOptions().locale.substring(0, 2);
     }
 
     /**
-     * Devuelve un mapa de objeto con los parámetros y sus valores en la
-     * cadena de consulta.
+     * Devuelve como propiedad un mapa de objeto con los parámetros y sus
+     * valores en la cadena de consulta.
      * @returns {object}
      */
     static get qsMap() {

@@ -6,12 +6,12 @@
     <title>Desarrollo de componentes cuadro de diálogo</title>    
     <script src="../../jsnode.js"></script>
     <script src="jsnode-dialog-101.js"></script>
-    <script src="jsnode-dialog-102.js"></script>
+    <script src="jsnode-dialog-noclose.js"></script>
     <script src="jsnode-dialog-close.js"></script>
     <script>
         JsNode.use$().domLoaded().then(() => {
             const d101 = new JsNodeDialog101('#d101');               
-            const d102 = new JsNodeDialog102('#d102', {
+            const dNoClose = new JsNodeDialogNoClose('#dNoClose', {
                 title: 'Preparando el entorno',
                 content: 'Cargando todos los componentes, por favor espere, será solo un momento'
             });
@@ -20,15 +20,17 @@
             $('#showModal102').on('click', () => {
                 const maxTime = 23000;
 
-                d102.showModal({ title: `Quedan ${maxTime / 1000} seg`, content: '' });
-                setTimeout(() => {
-                    d102.close();
-                }, maxTime);
+                dNoClose.showModal({
+                    title: `Quedan ${maxTime / 1000} seg`,
+                    content: '',
+                    timeout: maxTime,
+                    type: 'danger'
+                });
 
                 let ms = 0;
                 const timer = setInterval(() => {
                     ms += 1000;
-                    d102.updateOptions({
+                    dNoClose.updateOptions({
                         title: `Quedan ${(maxTime - ms) / 1000} seg`,
                         content: 'Terminando en breve...' + crypto.randomUUID()
                     })    
@@ -48,7 +50,7 @@
         <button id="showModal101">Mostrar formulario modal</button>
     </div>    
     <hr>
-    <div id="d102">
+    <div id="dNoClose">
         <button id="showModal102">Mostrar formulario modal que no se puede cerrar</button>
     </div>
     <hr>

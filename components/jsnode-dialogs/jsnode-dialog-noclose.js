@@ -1,11 +1,13 @@
 /**
- * @summary Componente de diálogo con mensaje sencillo que se ejecuta sobre JsNode.
+ * @summary Componente de diálogo modal con un mensaje de notificación
+ * que no se puede cerrar manualmente, pero sí mediante código o
+ * al finalizar un temporizador.
  * @copyright miloter
  * @license MIT
  * @since 2025-07-05
- * @version 0.4.0 2025-07-06
+ * @version 0.5.0 2026-01-05
  */
-class JsNodeDialog102 extends JsNode {
+class JsNodeDialogNoClose extends JsNode {
     // Para generar un identificador común en todas las instancias, se toman
     // los últimos 12 caracteres hexadecimales
     static #uid = 'u' + crypto.randomUUID().substring(24);
@@ -22,40 +24,45 @@ class JsNodeDialog102 extends JsNode {
     constructor(selector, options = {}) {
         // Agregamos la plantilla en la selección y hacemos que this sea una
         // referencia al elemento HTML/DIALOG
-        super(JsNode.select(selector).append(JsNodeDialog102.#template).children(-1));
+        super(JsNode.select(selector).append(JsNodeDialogNoClose.#template).children(-1));
         this.#options = {            
             title: 'Título del mensaje',
             content: 'Contenido del mensaje',
-            onCancel: console.log,
+            type: 'success', // success | warning | danger
+            timeout: -1
         };
         this.#initialize(options);
     }
 
-    #initialize(options = {}) {        
-        // Actualizamos las opciones
-        this.#_updateOptions(options);
-
+    #initialize(options = {}) {                
         // Evento que controla que no se pueda cerrar pulsando Escape
         this.on('keydown', event => {
             if (event.key === 'Escape') {
                 event.preventDefault();
             }
-        });
+        });        
+
+        // Actualizamos las opciones
+        this.#_updateOptions(options);
+    }
+
+    #_updateOptions(options) {
+        const uid = JsNodeDialogNoClose.#uid; // Para acortar los nombres
+
+        Object.assign(this.#options, options);
+        this.select(`.${uid}-dialog-title`).html(this.#options.title);
+        this.select(`.${uid}-dialog-content`).html(this.#options.content);
+        if (this.#options.timeout >= 0) {
+            setTimeout(() => this.close(), this.#options.timeout);
+        }
 
         // Actualiza los estilos
         this.#updateStyles();
     }
 
-    #_updateOptions(options) {
-        const uid = JsNodeDialog102.#uid; // Para acortar los nombres
-
-        Object.assign(this.#options, options);
-        this.select(`.${uid}-dialog-title`).html(this.#options.title);
-        this.select(`.${uid}-dialog-content`).html(this.#options.content);
-    }
-
     #updateStyles() {
-        const uid = JsNodeDialog102.#uid; // Para acortar los nombres
+        const uid = JsNodeDialogNoClose.#uid; // Para acortar los nombres
+        const type = this.#options.type;
 
         // Le asigna estilos si aun no existen
         if (JsNode.select(`head > style[${uid}]`).length) return;
@@ -65,8 +72,16 @@ class JsNodeDialog102 extends JsNode {
                 .${uid}-dialog {
                     background-color: yellowgreen;
                     max-width: 50%;
+                    color: ${
+                        type === 'success' ? 'white' :
+                            (type === 'warning' ? 'black' : 'white')
+                    };
+                    background-color: ${
+                        type === 'success' ? 'green' :
+                            (type === 'warning' ? 'orange' : 'tomato')
+                    };
                 }                                    
-
+                
                 .${uid}-dialog-title {
                     text-align: center;
                 }                                    
