@@ -16,7 +16,7 @@ var $, $$;
 /**
  * Proporciona métodos de clase e instancia para manipular eficientemente el DOM.
  */
-class JsNode {    
+class JsNode {
     // Constantes de utilidad
     static #dayNames = this.locale === 'es' ?
         ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'] :
@@ -24,9 +24,9 @@ class JsNode {
     static #dayNames3L = JsNode.#dayNames.map(d => d.substring(0, 3));
     static #monthNames = this.locale === 'es' ?
         ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'] :
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'] :
         ['january', 'february', 'march', 'april', 'may', 'june',
-        'july', 'august', 'september', 'october', 'november', 'december'];
+            'july', 'august', 'september', 'october', 'november', 'december'];
     static #monthNames3L = JsNode.#monthNames.map(m => m.substring(0, 3));
     static #blockTagNames = ['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE',
         'CANVAS', 'DD', 'DIV', 'DL', 'DT', 'FIELDSET', 'FIGCAPTION', 'FIGURE',
@@ -36,7 +36,7 @@ class JsNode {
 
     // Fotogramas por animación: La duración se divide en fotogramas por partes animadas
     static #fpa = 60;
-    
+
     // Cola de animación
     static #queue = [];
 
@@ -62,15 +62,15 @@ class JsNode {
             if (typeof (selector) === 'string') {
                 this.#nodes = Array.from(document.querySelectorAll(selector));
             } else if (selector instanceof Document ||
-                    selector instanceof Window ||
-                    selector instanceof HTMLElement) {
+                selector instanceof Window ||
+                selector instanceof HTMLElement) {
                 this.#nodes = [selector];
             } else if (selector instanceof NodeList) {
                 this.#nodes = Array.from(selector);
             } else if (selector instanceof Array) {
                 this.#nodes = selector;
             } else if (selector instanceof JsNode) {
-                this.#nodes = selector.nodes;               
+                this.#nodes = selector.nodes;
             } else if (selector === undefined) {
                 this.#nodes = [];
             } else {
@@ -125,7 +125,7 @@ class JsNode {
     static async #buildResponse(r, contentType) {
         const { ok, status, statusText } = r;
         const response = { ok, status, statusText };
-        
+
         if (contentType === 'json') {
             response.data = await r.json();
         } else if (contentType === 'text') {
@@ -555,7 +555,7 @@ class JsNode {
      * 
      * @returns {JsNode}
      */
-    static toDocument(text, type='text/html') {
+    static toDocument(text, type = 'text/html') {
         return new JsNode(new DOMParser().parseFromString(text, type));
     }
 
@@ -1318,7 +1318,7 @@ class JsNode {
     /**
      * Devuelve una propiedad con la localización del usuario: es, en, etc.
      */
-    static get locale() {        
+    static get locale() {
         return Intl.DateTimeFormat().resolvedOptions().locale.substring(0, 2);
     }
 
@@ -1354,7 +1354,7 @@ class JsNode {
 
         // Ordena detener la animación en curso, si la hubiere
         JsNode.#stopAnimation = true;
-    }    
+    }
 
     // Actualiza los nodos que contengan displayComputed y visibilityComputed
     #updateDisplayAndVisibility() {
@@ -1561,6 +1561,84 @@ class JsNode {
         });
 
         return new JsNode(nodes);
+    }
+
+    /**
+     * Devuelve los elementos filtrados que cumplen una condición.
+     * @param {string} condition Condición que debe cumplir cada elemento:
+     * first-child: Es el primero hijo.
+     * last-child: Es el último hijo.
+     * visible: El elemento está visible.
+     * selected: El elemento está seleccionado.
+     * checked: El elemento está marcado.
+     * disabled: El elemento está deshabilitado.
+     * readonly: El elemento es de solo lectura.
+     * Si la condición comienza por '!' se niega el resultado.
+     * @returns {JsNode}
+     */
+    as(condition) {        
+        return this.#asOrIs(condition, true);        
+    }
+
+    /**
+     * Devuelve un booleano que indica si todos los elementos cumplen una condición.
+     * @param {string} condition Condición que debe cumplir cada elemento:
+     * first-child: Es el primero hijo.
+     * last-child: Es el último hijo.
+     * visible: El elemento está visible.
+     * selected: El elemento está seleccionado.
+     * checked: El elemento está marcado.
+     * disabled: El elemento está deshabilitado.
+     * readonly: El elemento es de solo lectura.     
+     * Si la condición comienza por '!' se niega el resultado.     
+     * @returns {boolean}
+     */
+    is(condition) {        
+        return this.#asOrIs(condition);        
+    }
+
+    #asOrIs(condition, filter = false) {        
+        if (typeof(condition) !== 'string' && !(condition instanceof String)) {
+            throw new TypeError(`La condición '${
+                condition}' debe ser una expresión de tipo 'string'.`)
+        }
+        condition = condition.toLowerCase();
+
+        const assert = !condition.startsWith('!');
+        if (!assert) {
+            condition = condition.substring(1);
+        }
+
+        const check = (node, condition) => {
+            const ok = JsNode.#is(node, condition);
+            return assert ? ok : !ok;
+        };
+
+        if (filter) {
+            const nodes = this.#nodes.filter(node => check(node, condition));
+
+            return new JsNode(nodes);
+        } else {
+            return this.#nodes.every(node => check(node, condition));           
+        }
+    }
+
+    static #is(node, condition) {
+        switch (condition) {
+            case 'first-child':
+                return !node.previousElementSibling;
+            case 'last-child':
+                return !node.nextElementSibling;
+            case 'visible':
+                return JsNode.#visible(node);
+            case 'selected':
+            case 'checked':
+            case 'disabled':
+            case 'readonly':
+                return !!node[condition];
+            default:
+                throw new TypeError(`La condición '${condition}' no se admite.`);
+        }
     }
 
     /**
@@ -2131,7 +2209,7 @@ class JsNode {
 
             if (contains) return true;
         }
-        
+
         return false;
     }
 
@@ -2768,11 +2846,15 @@ class JsNode {
         const node = this.#nodes[index];
 
         if (node) {
-            const cs = getComputedStyle(node);
-
-            return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.visibility !== 'collapse';
+            return JsNode.#visible(node);            
         } else {
             return undefined;
         }
+    }
+
+    static #visible(node) {
+        const cs = getComputedStyle(node);
+        
+        return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.visibility !== 'collapse';
     }
 }
