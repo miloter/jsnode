@@ -39,12 +39,12 @@ class JsNodeDataTable extends JsNode {
                 <tbody></tbody>
             </table>
             <div class="${this.#uid}-datatable-footer">                        
-                <button class="${this.#uid}-previous-page">Ant.</button>
+                <button type="button" class="${this.#uid}-previous-page">Ant.</button>
                 &nbsp;
                 Página <input type="number" class="${this.#uid}-current-page"
                     min = "1" max="1" value="1" length="4"> de <span>101</span>
                 &nbsp;
-                <button class="${this.#uid}-next-page">Sig.</button>            
+                <button type="button" class="${this.#uid}-next-page">Sig.</button>            
             </div>       
         </div>
     `;
@@ -304,6 +304,7 @@ class JsNodeDataTable extends JsNode {
         this.select(`.${uid}-current-page[type="number"`)
             .val(this.#currentPage)
             .attr('max', this.#maxPage)
+            .prop('disabled', this.#maxPage === 0)
             .next().text(this.#maxPage);
 
         // Actualiza los botones de anterior/siguiente
@@ -312,7 +313,8 @@ class JsNodeDataTable extends JsNode {
 
         // Avisa de la actualización de la página
         if (typeof(this.#options.onPageChanged) === 'function') {
-            this.#options.onPageChanged(this.rowsInCurrentPage);
+            // Para dar tiempo a la inicialización en el cliente.
+            setTimeout(() => this.#options.onPageChanged(this.rowsInCurrentPage), 0);
         }
     }
 

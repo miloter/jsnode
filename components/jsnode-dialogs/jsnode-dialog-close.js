@@ -13,7 +13,7 @@ class JsNodeDialogClose extends JsNode {
 
     static #template = /*html*/`
         <dialog class="${this.#uid}-dialog">
-            <button class="${this.#uid}-dialog-close" title="Cerrar">X</button>
+            <button type="button" class="${this.#uid}-dialog-close" title="Cerrar">X</button>
             <h3 class="${this.#uid}-dialog-title"></h3>
             <div class="${this.#uid}-dialog-content"></div>
         </dialog>
@@ -27,6 +27,7 @@ class JsNodeDialogClose extends JsNode {
         super(JsNode.select(selector).append(JsNodeDialogClose.#template).children(-1));
         this.#options = {  
             scrollTop: true,          
+            modal: false,
             title: '',
             content: '',
             type: 'success' // success | warning | danger
@@ -65,8 +66,6 @@ class JsNodeDialogClose extends JsNode {
         JsNode.select('head').append(/*html*/`
             <style ${uid}>
                 .${uid}-dialog {                    
-                    max-width: 50%;
-                    position: relative;
                     color: ${
                         type === 'success' ? 'white' :
                             (type === 'warning' ? 'black' : 'white')
@@ -77,7 +76,6 @@ class JsNodeDialogClose extends JsNode {
                     };
                     font-weight: bold;
                     border: 1px solid black;
-                    margin: 0.25rem auto;
                 }                                    
 
                 .${uid}-dialog-close {
@@ -112,7 +110,11 @@ class JsNodeDialogClose extends JsNode {
      */
     show(options = {}) {
         this.#_updateOptions(options);
-        this.nodes[0].show();
+        if (options.modal) {
+            this.nodes[0].showModal();
+        } else {
+            this.nodes[0].show();
+        }
         if (this.#options.scrollTop) {
             window.scrollTo(0, 0);
         }
@@ -126,7 +128,6 @@ class JsNodeDialogClose extends JsNode {
     updateOptions(options = {}) {
         this.#_updateOptions(options);        
     }
-
 
     /**
      * Cierra el cuadro de diálogo.

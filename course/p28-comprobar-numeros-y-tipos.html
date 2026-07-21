@@ -43,7 +43,8 @@
                     if (JsNode.isInteger(value)) {
                         msg.html(`<p>${value} es un número entero</p>`)
                             .css(cssMessageSuccess)
-                            .show(1200, 0, 'all', n => n.hide(1200, 600));
+                            .show(1200, 0, 'all', 
+                                n => n.hide(1200, 600));
                     } else {
                         msg.html(`<p>${value} es un número decimal</p>`)
                             .css({
@@ -52,7 +53,8 @@
                                 backgroundColor: 'lightblue',
                                 padding: '0.5rem',
                                 border: '2px solid blue'
-                            }).show(600, 0, 'opacity', n => n.hide(600, 600));
+                            }).show(600, 0, 'opacity',
+                                n => n.hide(600, 600));
                     }
                 } else {
                     msg.html(`<p>${value} no es un número</p>`)
@@ -63,14 +65,16 @@
                             padding: '0.5rem',
                             border: '2px solid blue',
                             textAlign: 'center'
-                        }).show(600, 0, 'opacity', n => n.hide(600, 600));
+                        }).show(600, 0, 'opacity',
+                            n => n.hide(600, 600));
                 }
             });
 
             function showMsg(content) {
                 msg.html(content)
                     .css(cssMessageSuccess)
-                    .show(600, 0, 'opacity', n => n.hide(1200, 1200));
+                    .show(600, 0, 'opacity',
+                        n => n.hide(1200, 1200));
             }
 
             $('#getTypeName').on('click', function () {

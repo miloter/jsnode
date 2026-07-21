@@ -661,7 +661,7 @@ class JsNode {
      * se toma la fecha actual, también admite una cadena de fecha válida, o un timestamp.
      * @returns {string}
      */
-    static dateFormat(format = 'd/m/Y H:i:s:u', date = undefined) {
+    static dateFormat(format = 'd/m/Y H:i:s.u', date = undefined) {
         const parts = JsNode.dateParts(date);
 
         const out = [];
@@ -1228,7 +1228,7 @@ class JsNode {
      * (1.875).toFixed(2) => '1.88' 
      * 
      * @param {number|string} x Número o cadena representando un número.
-     * @param {number} decimalDigits Número entero de cifras decimales deseadas.
+     * @param {number} digits Número entero de dígitos decimales deseadas.
      * Por defecto es 0. Para los casos anteriores:
      * 
      * JsNode.round(1.835, 2) => 1.84
@@ -1237,11 +1237,29 @@ class JsNode {
      * 
      * @returns {number} El número redondeado a los decimales especificados.
      */
-    static round(x, decimalDigits = 0) {
-        // Factor para multiplicar/dividir
-        const y = Math.pow(10.0, decimalDigits);
+    static round(x, digits = 0) {
+        // solo se redondean números con parte decimal
+		if ((x - Math.floor(x)) == 0) {
+			return x;
+		}
+		
+		const pow = Math.pow(10.0, digits);
+		x *= pow;		
 
-        return Math.round(x * y) / y;
+		// Se diferencia la parte entera de los no negativos y los negativos
+		let y = x >= 0.0 ? Math.floor(x) : Math.ceil(x);
+
+		if (x >= 0.0) {
+			if ((x - y) >= 0.5) {		
+				y++;
+			}
+		} else {
+			if ((y - x) >= 0.5) {
+				y--;
+			}
+		}
+
+		return y / pow;	
     }
 
     /**

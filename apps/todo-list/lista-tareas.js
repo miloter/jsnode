@@ -53,8 +53,12 @@ function instanceComponents() {
                     <div>
                         <label>Descripción: <textarea class="task-description"
                             rows="8", cols="32"></textarea></label>
+                    </div>                    
+                    <div class="fb-row-center">
+                        <button type="submit" class="btn btn-warning">Actualizar</button>
+                        <button type="button" class="btn btn-success"
+                            onclick="tabs.activeTab('list')">Cancelar</button>
                     </div>
-                    <button type="submit" class="btn btn-warning">Actualizar</button>
                 </form>
             `,
             activateOnlyByCode: true

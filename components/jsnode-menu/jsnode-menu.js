@@ -121,18 +121,20 @@ class JsNodeMenu extends JsNode {
                     .${uid}-menu ul li a {
                         color: white;
                         text-decoration: none;
+                        display: block; 
+                        width: max-content;                        
                     }
 
                     .${uid}-menu ul li:hover {
                         background-color: #555;
                     }                    
-
+                    
                     .${uid}-menu ul ul {
                         position: absolute;                        
                         left: ${this.#options.orientation === 'horizontal' ? '0' : '100'}%;                        
                         top: ${this.#options.orientation === 'horizontal' ? '100' : '0'}%;                        
                         background-color: #444;
-                        z-index: 1;
+                        z-index: 2;
                     }
 
                     .${uid}-menu ul ul ul {
@@ -141,18 +143,8 @@ class JsNodeMenu extends JsNode {
                     }
 
                     .${uid}-menu ul ul li {
-                        display: block;
-                        min-width: 150px;
+                        display: block;                        
                     }
-
-                    .${uid}-menu ul ul li a {                        
-                        padding: 10px;
-                        display: block;
-                    }
-
-                    .${uid}-menu ul ul li:hover {
-                        background-color: #666;
-                    }                    
                 </style>
             `);
         }        
